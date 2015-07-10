@@ -1,6 +1,8 @@
 para do
   if authorized?(:edit, Pageflow::Entry)
     span(link_to(I18n.t('pageflow.admin.entries.editor'), pageflow.edit_entry_path(entry), :class => 'editor button'))
+    span(link_to(I18n.t('pageflow.admin.entries.copy'), pageflow.copy_entry_path(entry), :class => 'copy button'))
+    span(link_to(I18n.t('pageflow.admin.entries.download'), pageflow.download_entry_path(entry), :class => 'download button'))
   end
   span(link_to(I18n.t('pageflow.admin.entries.preview'), preview_admin_entry_path(entry), :class => 'preview button'))
   if entry.published?
