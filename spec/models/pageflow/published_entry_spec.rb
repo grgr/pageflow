@@ -2,18 +2,31 @@ require 'spec_helper'
 
 module Pageflow
   describe PublishedEntry do
+    describe '#title' do
+      let(:entry) { create(:entry, title: 'Metropolis') }
+      let(:published_entry) { PublishedEntry.new(entry) }
+
+      it 'is fetched from the revision when present' do
+        create(:revision, :published, entry: entry, title: 'Blade Runner')
+        expect(published_entry.title).to eq('Blade Runner')
+      end
+
+      it 'is fetched from the entry when absent from the revision' do
+        create(:revision, :published, entry: entry, title: '')
+        expect(published_entry.title).to eq('Metropolis')
+      end
+    end
+
     describe '#thumbnail_file' do
       it 'returns positioned share image of published revision' do
         entry = create(:entry)
         image_file = create(:image_file)
-        revision = create(:revision,
-                          :published,
-                          :entry => entry,
-                          :share_image_id => image_file.id,
-                          :share_image_x => 10,
-                          :share_image_y => 30)
-        chapter = create(:chapter, :revision => revision)
-        page = create(:page, :chapter => chapter)
+        create(:revision,
+               :published,
+               :entry => entry,
+               :share_image_id => image_file.id,
+               :share_image_x => 10,
+               :share_image_y => 30)
         published_entry = PublishedEntry.new(entry)
 
         expect(published_entry.thumbnail_file).to eq(image_file)
@@ -24,13 +37,14 @@ module Pageflow
       it 'returns positioned thumbnail file of first page of published revision' do
         entry = create(:entry)
         revision = create(:revision, :published, :entry => entry)
-        chapter = create(:chapter, :revision => revision)
+        storyline = create(:storyline, :revision => revision)
+        chapter = create(:chapter, :storyline => storyline)
         image_file = create(:image_file)
-        page = create(:page, :chapter => chapter, :configuration => {
-                        'background_image_id' => image_file.id,
-                        'background_image_x' => 20,
-                        'background_image_y' => 40
-                      })
+        create(:page, :chapter => chapter, :configuration => {
+                 'background_image_id' => image_file.id,
+                 'background_image_x' => 20,
+                 'background_image_y' => 40
+               })
         published_entry = PublishedEntry.new(entry)
 
         expect(published_entry.thumbnail_file).to eq(image_file)
@@ -53,8 +67,12 @@ module Pageflow
       it 'returns thumbnail of first page of published revision' do
         entry = create(:entry)
         revision = create(:revision, :published, :entry => entry)
-        chapter = create(:chapter, :revision => revision)
-        page = create(:page, :chapter => chapter)
+        storyline = create(:storyline, :revision => revision)
+        chapter = create(:chapter, :storyline => storyline)
+        image_file = create(:image_file, :processed)
+        page = create(:page, :chapter => chapter, :configuration => {
+                        'background_image_id' => image_file.id
+                      })
         published_entry = PublishedEntry.new(entry)
 
         expect(published_entry.thumbnail_url).to eq(page.thumbnail_url)

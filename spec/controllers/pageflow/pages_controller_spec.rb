@@ -9,10 +9,10 @@ module Pageflow
       it 'can write to nested configuration hash' do
         user = create(:user)
         entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
+        chapter = create(:chapter, :in_main_storyline_of => entry.draft)
 
         sign_in(user)
-        aquire_edit_lock(user, entry)
+        acquire_edit_lock(user, entry)
         post(:create,
              :chapter_id => chapter,
              :page => {
@@ -47,7 +47,7 @@ module Pageflow
       it 'requires edit lock' do
         user = create(:user)
         entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
+        chapter = create(:chapter, :in_main_storyline_of => entry.draft)
         page = create(:page, :chapter => chapter, :configuration => {})
 
         sign_in(user)
@@ -59,11 +59,11 @@ module Pageflow
       it 'can write to nested configuration hash' do
         user = create(:user)
         entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
+        chapter = create(:chapter, :in_main_storyline_of => entry.draft)
         page = create(:page, :chapter => chapter, :configuration => {})
 
         sign_in(user)
-        aquire_edit_lock(user, entry)
+        acquire_edit_lock(user, entry)
         patch(:update,
               :id => page,
               :page => {
@@ -97,12 +97,12 @@ module Pageflow
       it 'updates position of pages according to order' do
         user = create(:user)
         entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
+        chapter = create(:chapter, :in_main_storyline_of => entry.draft)
         pages = create_list(:page, 2, :chapter => chapter)
 
         sign_in(user)
-        aquire_edit_lock(user, entry)
-        patch(:order, :chapter_id => chapter, :ids => [pages.first.id, pages.last.id])
+        acquire_edit_lock(user, entry)
+        patch(:order, chapter_id: chapter, ids: [pages.first.id, pages.last.id])
 
         expect(pages.first.reload.position).to eq(0)
         expect(pages.last.reload.position).to eq(1)
@@ -111,13 +111,15 @@ module Pageflow
       it 'moves page from same entry to chapter' do
         user = create(:user)
         entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
-        other_chapter = create(:chapter, :entry => entry)
+        storyline = create(:storyline, :revision => entry.draft)
+        other_storyline = create(:storyline, :revision => entry.draft)
+        chapter = create(:chapter, :storyline => storyline)
+        other_chapter = create(:chapter, :storyline => other_storyline)
         page = create(:page, :chapter => chapter)
 
         sign_in(user)
-        aquire_edit_lock(user, entry)
-        patch(:order, :chapter_id => other_chapter, :ids => [page.id])
+        acquire_edit_lock(user, entry)
+        patch(:order, chapter_id: other_chapter, ids: [page.id])
 
         expect(page.reload.chapter).to eq(other_chapter)
       end
@@ -126,13 +128,15 @@ module Pageflow
         user = create(:user)
         entry = create(:entry, :with_member => user)
         other_entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
-        chapter_of_other_entry = create(:chapter, :entry => other_entry)
+        storyline = create(:storyline, :revision => entry.draft)
+        chapter = create(:chapter, :storyline => storyline)
+        storyline_of_other_entry = create(:storyline, :revision => other_entry.draft)
+        chapter_of_other_entry = create(:chapter, :storyline => storyline_of_other_entry)
         page = create(:page, :chapter => chapter)
 
         sign_in(user)
-        aquire_edit_lock(user, other_entry)
-        patch(:order, :chapter_id => chapter_of_other_entry, :ids => [page.id])
+        acquire_edit_lock(user, other_entry)
+        patch(:order, chapter_id: chapter_of_other_entry, ids: [page.id])
 
         expect(response).to be_not_found
       end
@@ -160,11 +164,11 @@ module Pageflow
       it 'responds with success' do
         user = create(:user)
         entry = create(:entry, :with_member => user)
-        chapter = create(:chapter, :revision => entry.draft)
+        chapter = create(:chapter, :in_main_storyline_of => entry.draft)
         page = create(:page, :chapter => chapter, :configuration => {})
 
         sign_in(user)
-        aquire_edit_lock(user, entry)
+        acquire_edit_lock(user, entry)
         delete(:destroy,
                :id => page,
                :format => 'json')

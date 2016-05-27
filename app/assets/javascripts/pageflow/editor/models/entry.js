@@ -19,6 +19,8 @@ pageflow.Entry = Backbone.Model.extend({
     this.configuration.parent = this;
 
     this.files = options.files || pageflow.files;
+    this.storylines = options.storylines || pageflow.storylines;
+    this.storylines.parentModel = this;
     this.chapters = options.chapters || pageflow.chapters;
     this.chapters.parentModel = this;
     this.pages = pageflow.pages;
@@ -30,6 +32,10 @@ pageflow.Entry = Backbone.Model.extend({
     pageflow.editor.fileTypes.each(function(fileType) {
       this.watchFileCollection(fileType.collectionName, this.getFileCollection(fileType));
     }, this);
+
+    this.listenTo(this.storylines, 'sort', function() {
+      this.pages.sort();
+    });
 
     this.listenTo(this.chapters, 'sort', function() {
       this.pages.sort();
@@ -49,11 +55,34 @@ pageflow.Entry = Backbone.Model.extend({
     });
   },
 
-  addChapter: function() {
-    this.chapters.create({
-      entry_id: this.get('id'),
-      position: this.chapters.length
-    });
+  addStoryline: function(attributes) {
+    var storyline = this.buildStoryline(attributes);
+    storyline.save();
+
+    return storyline;
+  },
+
+  buildStoryline: function(attributes) {
+    var defaults = {
+      title: '',
+    };
+
+    return this.storylines.addAndReturnModel(_.extend(defaults, attributes));
+  },
+
+  scaffoldStoryline: function(options) {
+    var scaffold = new pageflow.StorylineScaffold(this, options);
+    scaffold.create();
+
+    return scaffold;
+  },
+
+  addChapterInNewStoryline: function(options) {
+    return this.scaffoldStoryline(_.extend({depth: 'chapter'}, options)).chapter;
+  },
+
+  addPageInNewStoryline: function(options) {
+    return this.scaffoldStoryline(_.extend({depth: 'page'}, options)).page;
   },
 
   addFileUpload: function(upload) {
@@ -76,6 +105,8 @@ pageflow.Entry = Backbone.Model.extend({
     fileUsages.createForFile(file, { success: function(usage) {
       file.set('usage_id', usage.get('id'));
       this.getFileCollection(file.fileType()).add(file);
+
+      this.trigger('use:file', file);
     }.bind(this)});
   },
 
@@ -93,7 +124,7 @@ pageflow.Entry = Backbone.Model.extend({
 
   parse: function(response, options) {
     if (response) {
-      this.set(_.pick(response, 'published', 'published_until'));
+      this.set(_.pick(response, 'published', 'published_until', 'password_protected'));
 
       pageflow.editor.fileTypes.each(function(fileType) {
         this.getFileCollection(fileType).set(response[fileType.collectionName], {add: false, remove: false});

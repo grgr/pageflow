@@ -10,8 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'http://www.pageflow.io'
   s.summary     = 'Multimedia story telling for the web.'
 
-  s.files = Dir['{admins,app,config,db,lib,vendor,spec/factories}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.rdoc']
-  s.test_files = Dir['test/**/*']
+  s.files = Dir['{admins,app,config,db,lib,vendor,spec/factories,spec/fixtures}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.md', 'CHANGELOG.md']
 
   s.add_dependency 'rails', '>= 4.0.2', '< 4.2'
 
@@ -43,7 +42,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'state_machine_job', '~> 0.2.0'
 
   # File attachments
-  s.add_dependency 'paperclip', '~> 3.5'
+  s.add_dependency 'paperclip', '~> 4.2.4'
 
   # zencoder
   s.add_dependency 'zencoder', '~> 2.5'
@@ -53,6 +52,9 @@ Gem::Specification.new do |s|
 
   # Markdown parser
   s.add_dependency 'kramdown', '~> 1.5'
+
+  # Markdown parser
+  s.add_dependency 'htmlentities', '~> 4.3'
 
   # VideoJS for Asset Pipeline, version fixed at 4.1.0
   # Recommendation: Do not change
@@ -89,6 +91,15 @@ Gem::Specification.new do |s|
 
   # Build JSON APIs with ease.
   s.add_dependency 'jbuilder', '>= 1.5', '< 3.0'
+
+  # Browser language detection
+  s.add_dependency 'http_accept_language', '~> 2.0'
+
+  # Shared translations
+  s.add_dependency 'pageflow-public-i18n', '~> 1.0'
+
+  # Password encryption
+  s.add_dependency 'bcrypt', '~> 3.1.7'
 
   # Used by the dummy rails application
   s.add_development_dependency 'mysql2', '~> 0.3.16'

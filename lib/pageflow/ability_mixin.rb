@@ -13,6 +13,10 @@ module Pageflow
         can_edit_entry?(user, entry)
       end
 
+      can :manage, Storyline do |storyline|
+        can_edit_entry?(user, storyline.revision.entry)
+      end
+
       can :manage, Chapter do |record|
         can_edit_entry?(user, record.entry)
       end
@@ -47,9 +51,11 @@ module Pageflow
             membership.entry.account == membership.user.account
         end
 
+        can :view, Admin::FeaturesTab
+
         can :manage, Folder
         can :manage, [Entry, Revision]
-        can :manage, [Chapter, Page]
+        can :manage, [Storyline, Chapter, Page]
         can :manage, Pageflow.config.file_types.map(&:model)
 
         can :manage, Resque

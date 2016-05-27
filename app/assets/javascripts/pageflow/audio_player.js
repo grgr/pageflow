@@ -1,5 +1,12 @@
+//= require ./media_player
+
 //= require_self
+
 //= require ./audio_player/media_events
+//= require ./audio_player/null
+//= require ./audio_player/seek_with_invalid_state_handling
+//= require ./audio_player/rewind_method
+//= require ./audio_player/pause_in_background
 
 pageflow.AudioPlayer = function(sources, options) {
   options = options || {};
@@ -32,6 +39,17 @@ pageflow.AudioPlayer = function(sources, options) {
     pageflow.AudioPlayer.mediaEvents(audio, options.context);
   }
 
+  if (options.pauseInBackground && pageflow.browser.has('mobile platform')) {
+    pageflow.AudioPlayer.pauseInBackground(audio);
+  }
+
+  pageflow.mediaPlayer.enhance(audio, _.extend({
+    loadWaiting: true
+  }, options || {}));
+
+  pageflow.AudioPlayer.seekWithInvalidStateHandling(audio);
+  pageflow.AudioPlayer.rewindMethod(audio);
+
   audio.src = function(sources) {
     ready.then(function() {
       var source = _.detect(sources || [], function(source) {
@@ -60,7 +78,7 @@ pageflow.AudioPlayer = function(sources, options) {
   var originalSeek = audio.seek;
   audio.seek = function() {
     if (this.currentSrc) {
-      originalSeek.apply(this, arguments);
+      return originalSeek.apply(this, arguments);
     }
   };
 
@@ -69,6 +87,10 @@ pageflow.AudioPlayer = function(sources, options) {
     if (this.currentSrc) {
       originalPlay.apply(this, arguments);
     }
+  };
+
+  audio.paused = function() {
+    return !audio.playing;
   };
 
   audio.src(sources);

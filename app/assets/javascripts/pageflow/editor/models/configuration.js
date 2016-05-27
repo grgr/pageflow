@@ -22,11 +22,13 @@ pageflow.Configuration = Backbone.Model.extend({
     return this.parent.id;
   },
 
-  getImageFileUrl: function(attribute) {
+  getImageFileUrl: function(attribute, options) {
+    options = options || {};
+
     var file = this.getImageFile(attribute);
 
     if (file && file.isReady()) {
-      return file.get('url');
+      return file.get(options.styleGroup ? options.styleGroup + '_url' : 'url');
     }
 
     return '';
@@ -110,7 +112,7 @@ pageflow.Configuration = Backbone.Model.extend({
 
     return _.map(sources, function(source) {
       var clone = _.clone(source);
-      clone.src = clone.src + '?e=' + parent.id;
+      clone.src = clone.src + '?e=' + parent.id + '&t=' + new Date().getTime();
       return clone;
     });
   }

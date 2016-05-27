@@ -19,7 +19,7 @@ pageflow.Page = Backbone.Model.extend({
     this.configuration.parent = this.configuration.page = this;
 
     this.listenTo(this.configuration, 'change', function() {
-      this.trigger('change:configuration');
+      this.trigger('change:configuration', this);
     });
 
     this.listenTo(this.configuration, 'change:title', function() {
@@ -39,6 +39,10 @@ pageflow.Page = Backbone.Model.extend({
     return this.isNew() ? this.collection.url() : '/pages';
   },
 
+  storylinePosition: function() {
+    return (this.chapter && this.chapter.storylinePosition()) || -1;
+  },
+
   chapterPosition: function() {
     return (this.chapter && this.chapter.get('position')) || -1;
   },
@@ -50,13 +54,17 @@ pageflow.Page = Backbone.Model.extend({
   thumbnailFile: function() {
     var configuration = this.configuration;
 
-    return _.reduce(this.pageType().thumbnail_candidates, function(result, candidate) {
+    return _.reduce(this.pageType().thumbnailCandidates(), function(result, candidate) {
       return result || configuration.getReference(candidate.attribute, candidate.file_collection);
     }, null);
   },
 
+  pageLinks: function() {
+    return this.pageType().pageLinks(this.configuration);
+  },
+
   pageType: function() {
-    return pageflow.Page.typesByName[this.get('template')];
+    return pageflow.editor.pageTypes.findByName(this.get('template'));
   },
 
   toJSON: function() {
@@ -70,6 +78,9 @@ pageflow.Page = Backbone.Model.extend({
   }
 });
 
-pageflow.Page.transitions = ['fade', 'scroll'];
 pageflow.Page.linkedPagesLayouts = ['default', 'hero_top_left', 'hero_top_right'];
 pageflow.Page.textPositions = ['left', 'right'];
+
+pageflow.Page.scrollIndicatorModes = ['all', 'only_back', 'only_next', 'non'];
+pageflow.Page.scrollIndicatorOrientations = ['vertical', 'horizontal'];
+pageflow.Page.delayedTextFadeIn = ['no_fade', 'short', 'medium', 'long'];

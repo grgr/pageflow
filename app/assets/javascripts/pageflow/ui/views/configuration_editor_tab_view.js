@@ -8,7 +8,8 @@ pageflow.ConfigurationEditorTabView = Backbone.Marionette.View.extend({
   input: function(propertyName, view, options) {
     this.view(view, _.extend({
       placeholderModel: this.options.placeholderModel,
-      propertyName: propertyName
+      propertyName: propertyName,
+      attributeTranslationKeyPrefixes: this.options.attributeTranslationKeyPrefixes
     }, options || {}));
   },
 
@@ -20,8 +21,8 @@ pageflow.ConfigurationEditorTabView = Backbone.Marionette.View.extend({
     }, options || {})));
   },
 
-  group: function(name) {
-    this.groups.apply(name, this);
+  group: function(name, options) {
+    this.groups.apply(name, this, options);
   },
 
   render: function() {
@@ -50,12 +51,12 @@ pageflow.ConfigurationEditorTabView.Groups = function() {
     groups[name] = fn;
   };
 
-  this.apply = function(name, context) {
+  this.apply = function(name, context, options) {
     if (!(name in groups)) {
       throw 'Undefined group named "' + name + '".';
     }
 
-    groups[name].call(context);
+    groups[name].call(context, options || {});
   };
 };
 

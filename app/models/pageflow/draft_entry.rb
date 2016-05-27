@@ -6,23 +6,32 @@ module Pageflow
 
     delegate(:id,
              :edit_lock, :account, :theming, :slug,
+             :enabled_feature_names,
              :published_until, :published?,
+             :password_digest,
              :to_model, :to_key, :persisted?, :to_json,
              :to => :entry)
 
     delegate(:title, :summary, :credits, :manual_start,
-             :widgets, :chapters, :pages,
+             :widgets,
+             :storylines, :main_storyline_chapters, :chapters, :pages,
              :emphasize_chapter_beginning,
              :emphasize_new_pages,
              :share_image_id, :share_image_x, :share_image_y,
              :files,
              :image_files, :video_files, :audio_files,
              :locale,
+             :author, :publisher, :keywords,
              :to => :draft)
 
     def initialize(entry, draft = nil)
       @entry = entry
       @draft = draft || entry.draft
+    end
+
+    # So we can always get to the original Entry title.
+    def entry_title
+      entry.title
     end
 
     def create_file(model, attributes)

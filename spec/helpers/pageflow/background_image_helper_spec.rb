@@ -28,6 +28,20 @@ module Pageflow
         expect(html).to have_selector('div.image_6')
       end
 
+      it 'uses style_group option in image css class' do
+        configuration = {'background_image_id' => 6}
+        html = helper.background_image_div(configuration, 'background_image', style_group: :panorama)
+
+        expect(html).to have_selector('div.image_panorama_6')
+      end
+
+      it 'uses file_tyoe option to determine prefix in image css class' do
+        configuration = {'video_id' => 6}
+        html = helper.background_image_div(configuration, 'video', file_type: 'video_file')
+
+        expect(html).to have_selector('div.video_poster_6')
+      end
+
       it 'sets inline style for background position' do
         configuration = {'background_image_x' => 45, 'background_image_y' => 35}
         html = helper.background_image_div(configuration, 'background_image')
@@ -58,6 +72,24 @@ module Pageflow
         html = helper.background_image_div_with_size(configuration, 'background_image', :spanning => true)
 
         expect(html).to have_selector('div.background_image[style*="padding-top: 50.0%"][style*="width: 100%"]')
+      end
+
+      it 'returns div with data-width and data-height attributes from video' do
+        video_file = create(:video_file, :width => 123, :height => 456)
+        configuration = {'video_id' => video_file.id}
+        html = helper.background_image_div_with_size(configuration, 'video', file_type: 'video_file')
+
+        expect(html).to have_selector('div.background_image[data-width="123"][data-height="456"]')
+      end
+    end
+
+    describe '#background_image_lazy_loading_css_class' do
+      it 'returns css classes prefixed with .load_all_images and .load_image' do
+        image_file = create(:image_file)
+
+        css_class = helper.background_image_lazy_loading_css_class('image', image_file)
+
+        expect(css_class).to eq(".load_all_images .image_#{image_file.id}, .load_image.image_#{image_file.id}")
       end
     end
   end

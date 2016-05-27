@@ -1,18 +1,23 @@
+//=require ./slideshow/atmo
+//=require ./slideshow/lazy_page_widget
 //=require ./slideshow/page_widget
 //=require ./slideshow/scroller_widget
 //=require ./slideshow/scroll_indicator_widget
 //=require ./slideshow/hidden_text_indicator_widget
 //=require ./slideshow/progressive_preload
+//=require ./slideshow/adjacent_preparer
 //=require ./slideshow/swipe_gesture
 //=require ./slideshow/hide_text
 //=require ./slideshow/hide_text_on_swipe
+//=require ./slideshow/dom_order_scroll_navigator
 
 pageflow.Slideshow = function($el, configurations) {
-  var transitionDuration = 1000,
-      transitioning = false,
+  var transitioning = false,
       preload = new pageflow.ProgressivePreload(),
       currentPage = $(),
-      currentPageIndex, pages;
+      pages = $(),
+      that = this,
+      currentPageIndex;
 
   configurations = configurations || {};
 
@@ -20,7 +25,7 @@ pageflow.Slideshow = function($el, configurations) {
     if (transitioning) { return; }
     transitioning = true;
 
-    fn.call(context);
+    var transitionDuration = fn.call(context);
 
     setTimeout(function() {
       transitioning = false;
@@ -37,25 +42,50 @@ pageflow.Slideshow = function($el, configurations) {
     return result;
   }
 
+  function currentPagePermaId() {
+    return parseInt(currentPage.attr('id'), 10);
+  }
+
   this.nextPageExists = function() {
-    return (!currentPage.is(pages.last()));
+    return this.scrollNavigator.nextPageExists(currentPage, pages);
+  };
+
+  this.previousPageExists = function() {
+    return this.scrollNavigator.previousPageExists(currentPage, pages);
+  };
+
+  this.isOnLandingPage = function() {
+    return currentPage.is(this.scrollNavigator.getLandingPage(pages));
+  };
+
+  this.goToLandingPage = function() {
+    this.goTo(this.scrollNavigator.getLandingPage(pages));
   };
 
   this.back = function() {
-    this.goTo(currentPage.prev('.page'), {position: 'bottom'});
+    this.scrollNavigator.back(currentPage, pages);
   };
 
   this.next = function() {
-    this.goTo(currentPage.next('.page'));
+    this.scrollNavigator.next(currentPage, pages);
   };
 
-  this.goToById = function(id) {
-    this.goTo($el.find('[data-id=' + id + ']'));
+  this.parentPageExists = function() {
+    return !!pageflow.entryData.getParentPagePermaIdByPagePermaId(currentPagePermaId());
   };
 
-  this.goToByPermaId = function(permaId) {
+  this.goToParentPage = function() {
+    this.goToByPermaId(pageflow.entryData.getParentPagePermaIdByPagePermaId(currentPagePermaId()),
+                       {transition: 'scroll_over_from_right'});
+  };
+
+  this.goToById = function(id, options) {
+    return this.goTo($el.find('[data-id=' + id + ']'), options);
+  };
+
+  this.goToByPermaId = function(permaId, options) {
     if (permaId) {
-      this.goTo($el.find('#' + permaId));
+      return this.goTo($el.find('#' + permaId), options);
     }
   };
 
@@ -68,19 +98,35 @@ pageflow.Slideshow = function($el, configurations) {
         currentPage = page;
         currentPageIndex = currentPage.index();
 
-        var direction = currentPageIndex > previousPage.index() ? 'forwards' : 'backwards';
+        var transition = options.transition ||
+          this.scrollNavigator.getDefaultTransition(previousPage, currentPage, pages);
 
-        previousPage.page('deactivate', {direction: direction});
-        currentPage.page('activate', {direction: direction, position: options.position});
+        var direction =
+          this.scrollNavigator.getTransitionDirection(previousPage, currentPage, options);
+
+        var outDuration = previousPage.page('deactivate', {
+          direction: direction,
+          transition: transition
+        });
+
+        var inDuration = currentPage.page('activate', {
+          direction: direction,
+          position: options.position,
+          transition: transition
+        });
 
         preload.start(currentPage);
-        $el.trigger('slideshowchangepage');
+        $el.trigger('slideshowchangepage', [options]);
+
+        return Math.max(outDuration, inDuration);
       }, this);
+
+      return true;
     }
   };
 
   this.goToFirstPage = function() {
-    this.goTo(pages.first());
+    return this.goTo(pages.first());
   };
 
   this.update = function() {
@@ -102,6 +148,10 @@ pageflow.Slideshow = function($el, configurations) {
     return currentPage;
   };
 
+  this.currentPageConfiguration = function() {
+    return currentPage.page('getConfiguration');
+  };
+
   function ensureCurrentPage() {
     var newCurrentPage = findNewCurrentPage();
 
@@ -116,7 +166,7 @@ pageflow.Slideshow = function($el, configurations) {
 
   function findNewCurrentPage() {
     if (!currentPage.length) {
-      return pages.first();
+      return that.scrollNavigator.getLandingPage(pages);
     }
     else if (!currentPage.parent().length) {
       return nearestPage(currentPageIndex);
@@ -140,13 +190,12 @@ pageflow.Slideshow = function($el, configurations) {
   }, this));
 
   $el.on('click', 'a.to_top', _.bind(function() {
-    this.goToFirstPage();
+    this.goToLandingPage();
   }, this));
 
   $(window).on('resize', this.triggerResizeHooks);
 
-  // prevent page from bouncing in modern browsers
-  $(document).on('touchmove', function (e) { e.preventDefault(); });
+  pageflow.nativeScrolling.preventScrollBouncing($el);
 
   $el.addClass('slideshow');
 
@@ -155,9 +204,44 @@ pageflow.Slideshow = function($el, configurations) {
     pageflow.hideText.deactivate();
   });
 
-  var scrollIndicator = $el.find('.scroll_indicator');
-  scrollIndicator.scrollIndicator({parent : this});
-  scrollIndicator.on('click', _.bind(function(event) {
-    this.next();
-  }, this));
+  $el.find('.scroll_indicator').scrollIndicator({parent: this});
+
+  this.scrollNavigator = new pageflow.DomOrderScrollNavigator(this, pageflow.entryData);
+  this.preparer = pageflow.AdjacentPreparer.create(function() { return pages; }, this.scrollNavigator).attach(pageflow.events);
+};
+
+pageflow.Slideshow.setup = function(options) {
+  function configurationsById(pages) {
+    return _.reduce(pages, function(memo, page) {
+      memo[page.id] = page.configuration;
+      return memo;
+    }, {});
+  }
+
+  pageflow.slides = new pageflow.Slideshow(
+    options.element,
+    configurationsById(options.pages)
+  );
+
+  pageflow.features.enable('slideshow', options.enabledFeatureNames || []);
+
+  pageflow.atmo = pageflow.Atmo.create(
+    pageflow.slides,
+    pageflow.events,
+    pageflow.audio
+  );
+
+  pageflow.history = pageflow.History.create(
+    pageflow.slides,
+    {simulate: options.simulateHistory}
+  );
+
+  if (options.beforeFirstUpdate) {
+    options.beforeFirstUpdate();
+  }
+
+  pageflow.slides.update();
+  pageflow.history.start();
+
+  return pageflow.slides;
 };

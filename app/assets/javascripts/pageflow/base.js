@@ -26,13 +26,19 @@
 //= require backbone-rails
 //= require_self
 
+//= require ./object
+//= require ./entry_data
+//= require ./seed_entry_data
 //= require ./cookies
 //= require ./events
 //= require ./page_type
+//= require ./page_transitions
 //= require ./asset_urls
 //= require ./preload
 //= require ./bandwidth
+//= require ./browser
 //= require ./features
+//= require ./audio
 //= require ./audio_player
 //= require ./video_player
 //= require ./visited
@@ -42,6 +48,11 @@
 //= require ./widget_types
 //= require ./built_in_widget_types
 //= require ./links
+//= require ./highlighted_page
+//= require ./chapter_filter
+//= require ./fullscreen
+//= require ./multimedia_alert
+//= require ./native_scrolling
 
 //= require ./settings
 

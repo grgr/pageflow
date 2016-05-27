@@ -163,6 +163,9 @@ de:
         duration: Länge
         format: Format
       pageflow/chapter:
+        display_parent_page_button: ! '''Übergeordnete Seite''-Button anzeigen'
+        navigation_bar_mode: Navigationsleiste
+        parent_page_perma_id: Übergeordnete Seite
         title: Titel
       pageflow/entry:
         account: Konto
@@ -192,12 +195,17 @@ de:
         additional_description: Beschreibung für Infobox
         additional_title: Titel für Infobox
         allow_full_screen: Vollbild Anzeige erlauben
+        atmo_audio_file_id: Atmo-Audio
+        atmo_during_playback: Atmo während Medien-Wiedergabe
         audio_file_id: Audio
+        auto_change_page_on_ended: Am Ende weiterblättern
         autoplay: Automatische Wiedergabe
         background_image_id: Hintergrundbild
         background_video_id: Hintergrundvideo
+        delayed_text_fade_in: Text verzögert einblenden
         description: Beschreibung für Übersicht
         display_in_navigation: In Navigationsleiste anzeigen
+        emphasize_in_navigation: In Navigationsleiste hervorheben
         gradient_opacity: Intensität der Abblendung
         hide_title: Titel ausblenden
         invert: Farben invertieren
@@ -205,6 +213,8 @@ de:
         linked_pages_layout: Hervorgehobenes Element
         mobile_poster_image_id: Posterbild (mobil)
         poster_image_id: Posterbild
+        scroll_indicator_mode: Sichtbare Scroll Indikatoren
+        scroll_indicator_orientation: Scroll Indikator Ausrichtung
         subtitle: Untertitel
         tagline: Tagline
         template: Seitentyp
@@ -341,11 +351,36 @@ de:
         one: Nutzer
         other: Nutzer
     values:
+      pageflow/chapter:
+        navigation_bar_mode:
+          all: Alle Seiten zeigen
+          current_chapter: Nur aktuelles Kapitel
+          inherit_from_parent: Von übergeordnetem Kapitel erben
+          non: Ausblenden
+          same_parent_chapter: Nur Kapitel mit gleichem übergeordneten Kapitel
+          same_parent_page: Nur Kapitel mit gleicher übergeordneter Seite
       pageflow/page:
+        atmo_during_playback:
+          mute: Ausblenden
+          play: Weiterspielen
+          turn_down: Leiser weiterspielen
+        delayed_text_fade_in:
+          long: Lange Verzögerung
+          medium: Mittlere Verzögerung
+          no_fade: Nicht verzögert einblenden
+          short: Kurze Verzögerung
         linked_pages_layout:
           default: (Kein)
           hero_top_left: Links oben
           hero_top_right: Rechts oben
+        scroll_indicator_mode:
+          all: Vorwärts und zurück
+          non: Keine
+          only_back: Nur zurück
+          only_next: Nur vorwärts
+        scroll_indicator_orientation:
+          horizontal: Horizontal
+          vertical: Vertikal
         template:
           audio: Audio
           audio_loop: Hintergrund-Audio
@@ -369,7 +404,7 @@ de:
     - Fr
     - Sa
     abbr_month_names:
-    - 
+    -
     - Jan
     - Feb
     - Mär
@@ -663,8 +698,10 @@ de:
       entries:
         add_folder: Ordner hinzufügen
         confirm_depublish: Soll der Beitrag wirklich depubliziert werden?
+        confirm_duplicate: Beitrag wirklich duplizieren?
         confirm_restore: Soll der Beitrag wirklich auf den Stand dieser Revision zurückgesetzt werden? Vor dem Zurücksetzen wird eine automatische Sicherung des aktuellen Standes erstellt.
         depublish: Beitrag depublizieren
+        duplicate: Beitrag kopieren
         edit: Bearbeiten
         edit_config: Konfiguration ändern
         edit_revision: Ändern
@@ -675,6 +712,7 @@ de:
         no_members: Es sind keine Redakteure zugeordnet.
         no_revisions: Bisher keine Revisionen
         not_published: Nicht veröffentlicht
+        password_protected: Mit Passwortschutz
         preview: Vorschau
         published_forever: Veröffentlicht
         published_revision_legend: Aktuell Veröffentlichter Stand
@@ -696,6 +734,11 @@ de:
         show_public: Öffentlich
         snapshot: Aktuellen Stand sichern
         title_hint: Dieses Feld bestimmt die URL, unter der der Beitrag öffentlich erreichbar ist.
+      features:
+        states:
+          disabled: Deaktiviert
+          enabled: Aktiviert
+          undefined: (Standard)
       folders:
         all: Alle
         confirm_destroy: Ordner wirklick löschen? Beiträge bleiben erhalten.
@@ -748,8 +791,12 @@ de:
         suspended: Der Benutzer wurde gesperrt. Er kann sich nun nicht mehr anmelden.
         unsuspend: Entsperren
         unsuspended: Der Benutzer wurde entsperrt. Er kann sich nun wieder anmelden.
+    atmo:
+      feature_name: Atmo-Audios
     audio:
       open: Audio anhören
+    auto_change_page:
+      feature_name: Automatischer Seitenwechsel
     built_in_page_type:
       audio:
         page_type_category_name: Audio
@@ -769,6 +816,17 @@ de:
       video:
         page_type_category_name: Video
         page_type_description: Wiedergabe einer Videodatei mit Steuerelementen
+    chapter_hierachy:
+      feature_name: Kapitel Hierachie
+    common_page_link_attributes:
+      label:
+        label: Bezeichnung
+      page_transition:
+        label: Seitenübergangseffekt
+      target_page_id:
+        label: Zielseite
+    delayed_text_fade_in:
+      feature_name: Text verzögert einblenden
     devise:
       mailer:
         reset_password_instructions:
@@ -790,6 +848,8 @@ de:
       required: Die Aktion kann nicht durchgeführt werden, da der Beitrag gerade in einem Editor geöffnet ist.
       required_but_held_by_other_user: Die Aktion kann nicht durchgeführt werden, da der Beitrag gerade von einem anderen Benutzer bearbeitet wird.
     editor:
+      atmo:
+        disabled: Atmo deaktiviert
       blank_entry:
         create_chapter: Klicke jetzt auf <em>Neues Kapitel</em>, um ein erstes Kapitel zu erstellen.
         create_page: Klicke dann auf <em>Neue Seite</em>, um dem Kapitel eine erste Seite hinzuzufügen.
@@ -832,6 +892,8 @@ de:
           audio_files: Audios
           image_files: Bilder
           video_files: Videos
+      quotas:
+        loading: Quotas überprüfen...
       templates:
         back_button_decorator:
           outline: Gliederung
@@ -881,6 +943,9 @@ de:
           outline: Gliederung
           retry: Erneut versuchen
           save_error: Beim Speichern der Seite ist ein Problem aufgetreten.
+        edit_page_link:
+          back: Zurück
+          destroy: Löschen
         embedded:
           page_link:
             reset: Zurücksetzen
@@ -910,6 +975,15 @@ de:
           title: Hilfe
         help_button:
           open_help: Hilfe anzeigen
+        inputs:
+          reference:
+            edit: Verknüpfung ändern
+            reset: Verknüpfung entfernen
+        list_blank_slate:
+          text: (Keine Einträge)
+        list_item:
+          edit: Bearbeiten
+          remove: Löschen
         loading:
           loading: Daten werden geladen.
         locked:
@@ -928,10 +1002,26 @@ de:
           none_available: Keine anderen Beiträge verfügbar
         page_item:
           save_error: Beim Speichern der Seite ist ein Fehler aufgetreten.
+        page_link_item:
+          edit: Bearbeiten
+          remove: Löschen
+        page_links:
+          add: Hinzufügen
+          label: Verlinkte Seiten
+        page_selection:
+          cancel: Abbrechen
+          ok: OK
+          title: Zielseite auswählen
         publish_entry:
+          already_published_with_password_help: Dieser Beitrag ist im Moment mit Passwortschutz veröffentlicht. Lassen Sie das Passwort-Feld frei, um das bisherige Passwort beizubehalten.
+          already_published_without_password_help: Dieser Beitrag ist im Moment ohne Passwortschutz veröffentlicht. Nach Festlegen eines Passworts ist kein öffentlicher Zugriff mehr möglich.
           date: Datum
           files_pending_notice: Bitte warten Sie bis alle Dateien des Beitrags verarbeitet wurden und überprüfen Sie das Ergebnis. Der Beitrag kann dann veröffentlicht werden.
           not_published_notice: Dieser Beitrag ist zur Zeit nicht veröffentlicht.
+          password: Passwort
+          password_help: Teilen Sie Ihren veröffentlichten Beitrag nur mit bestimmten Personen. Besucher benötigen dann das von Ihnen festgelegte Passwort, um den Beitrag ansehen zu können.
+          password_protected: Mit Passwort schützen
+          previously_published_with_password_help: Dieser Beitrag war zuletzt mit Passwortschutz veröffentlicht. Lassen Sie das Passwort-Feld frei, um das bisherige Passwort beizubehalten.
           publish: Veröffentlichen
           publish_current: Akuellen Stand veröffentlichen
           publish_success: Der Beitrag wurde erfolgreich veröffentlicht.
@@ -941,6 +1031,7 @@ de:
           time: Uhrzeit
           unlimited: Unbegrenzt
           until_including: Bis einschließlich
+          user_name: Benutzername
           view_revisions: Revisionen ansehen
         select_button:
           select: Auswählen
@@ -953,6 +1044,8 @@ de:
 
 
             Dieser Schritt kann nicht rückgängig gemacht werden.'
+        edit_page_link_view:
+          default_page_transition: (Standard)
         edit_page_view:
           confirm_destroy: Seite wirklich löschen?
         editor_views:
@@ -966,105 +1059,42 @@ de:
           add: Hinzufügen
           reuse: Wiederverwenden
           upload: Hochladen
+        inputs:
+          reference_input_view:
+            none: (Kein)
         page_item_view:
           unnamed: (Unbenannt)
-    entries:
-      entry:
-        print_logo: Logo
-        scroll_indicator: Scrollen, um weiterzulesen
-        swipe_indicator: Wischen, um Text einzublenden
-      ie8_hint:
-        close: Hinweis schließen
-        deprecated_browser: <p>Liebe Nutzer,</p><p>leider nutzen Sie eine veraltete Version Ihres Browsers. Deshalb können die an dieser Stelle vorgesehenen Inhalte nicht korrekt dargestellt werden. Bitte aktualisieren Sie auf eine aktuelle Version. Unter <a href="http://www.browserchoice.eu/">http://www.browserchoice.eu/</a> stehen alternative Browser zur Verfügung.  Für eine Installation benötigen Sie gegebenenfalls Administrator-Rechte. </p>
-      mobile_navigation:
-        imprint: Impressum
-        overview: Übersicht
-        share_with_twitter: Twittern
-      multimedia_alert:
-        alert: Hinweis
-        close: Los geht's
-        scroll_hint: Mit dem Mausrad oder den Pfeiltasten auf der Tastatur wird die jeweils nächste Kapitelseite aufgerufen.
-        sound_hint: Für dieses multimediale Reportage-Format nutzen wir neben Texten und Fotos auch Audios und Videos. Daher sollten die Lautsprecher des Systems eingeschaltet sein.
-        swipe_hint: Durch Wischen wird die jeweils nächste Kapitelseite aufgerufen.
-      navigation:
-        bar_bottom:
-          close_fullscreen: Vollbilddarstellung beenden
-          hide_text: Text ausblenden
-          mute_off: Ton ein
-          mute_on: Ton aus
-          open_fullscreen: Vollbilddarstellung
-          scroll_down: Runter scrollen
-          show_text: Text wieder einblenden
-          volume: Lautstärke
-        bar_top:
-          close_overview: Übersicht schließen
-          close_top_navigation: Navigation schließen
-          imprint: Impressum
-          navigate_top: Zum Anfang
-          open_overview: Übersicht öffnen
-          open_top_navigation: Navigation öffnen
-          scroll_up: Hoch scrollen
-          share: Teilen
-          share_with_facebook: Auf Facebook teilen
-          share_with_twitter: Twittern
-        home_button:
-          show_home: Zur Startseite
-      non_js_hint:
-        js_hint: Zur korrekten Anzeige der Seite benötigen Sie JavaScript.
-      overview:
-        chapter:
-          chapter: Kapitel
-        entry:
-          close: Schliessen
-          overview: Übersicht
-          scroll_left: Nach links scrollen
-          scroll_right: Nach rechts scrollen
-      skip_links:
-        goto_content: Zum Inhalt
-        goto_navigation: Zur Seitennavigation
-        goto_topnavigation: Zur Dachnavigation
+        page_link_item_view:
+          no_page: (Keine Seite)
+          unnamed: (Unbenannt)
+    entry:
+      duplicated_title: Kopie von %{title}
     help_entries:
+      atmo:
+        menu_item: Atmo Audio
+        text: ! '# Atmo Audio
+
+
+          Mit der „Atmo“ kann jede Seite, unabhängig vom Seitentyp, im Hintergrund Sound abspielen. Dabei kannst Du bestimmen, ob ein Sound nur auf einer Seite zu hören ist oder über mehrere Seiten ohne Unterbrechung läuft. Wähle dazu einfach für die benachbarten Seiten die selbe Audiodatei als Atmo aus.
+
+
+          Auf diese Weise lassen sich Kapitel akustisch voneinander absetzen und zusammenhängende Seiten stärker verweben.
+
+
+          Beim Seitentyp Video kann zusätzlich ausgwählt werden, ob der Hintergrundsound während der Video-Wiedergabe normal oder leiser weitergespielt oder ganz ausgeblendet werden soll.
+
+
+          Die Einstellung der Atmo-Sounds erreichst du bei jeder Seite über den Reiter „Optionen“.
+
+
+          Sollte Dich die Atmo während der Bearbeitung Deines Beitrags im Editor einmal stören, kannst Du sie mit der Tastenkombination „Alt + a“ vorübergehend stumm schalten. Um die Atmo wieder zu aktivieren, drücke einfach erneut „Alt + a“. '
       built_in_page_type:
         audio:
           menu_item: Audio
-          text: ! '# Audio
-
-
-            Wiedergabe von Audiodatei mit Steuerelementen Hiermit
-
-            kannst Du Audiodateien mit Bild und Textinhalten
-
-            kombinieren. Wie beim Seitentyp „Video“ werden
-
-            Steuerelemente angezeigt, und ebenso kann eine zusätzliche
-
-            Infobox mit Text befüllt werden.
-
-
-            Typische Anwendungsbeispiele: Interview, O-Töne,
-
-            Musikstücke
-
-'
+          text: ! "# Audio\n\n*Wiedergabe von Audiodatei mit Steuerelementen* \n    \nHiermit kannst Du Audiodateien mit Bild und Textinhalten\nkombinieren. Wie beim Seitentyp „Video“ werden\nSteuerelemente angezeigt, und ebenso kann eine zusätzliche\nInfobox mit Text befüllt werden.\n\nTypische Anwendungsbeispiele: Interview, O-Töne,\nMusikstücke"
         audio_loop:
           menu_item: Hintergrund-Audio
-          text: ! '# Hintergrund-Audio
-
-
-            Wiedergabe eines Audio-Loops ohne Steuerelemente (Atmo)
-
-            Auch hier wird wie beim „Hintergrund-Bild“ ein bildschirmfüllendes Foto ausgespielt. Der
-
-            Unterschied zum reinen „Audio“ besteht darin, dass der Nutzer mangels Steuerelemente
-
-            keinen Einfluss auf die Wiedergabe hat und das Audio in einer Endlosschleife läuft.
-
-
-            Typische Anwendungsbeispiele: Atmos, Klangwelten,
-
-            Feld-Aufnahmen
-
-'
+          text: ! "# Hintergrund-Audio\n\nWiedergabe eines Audio-Loops ohne Steuerelemente (Atmo)\n    \nAuch hier wird wie beim „Hintergrund-Bild“ ein bildschirmfüllendes Foto ausgespielt. Der\nUnterschied zum reinen „Audio“ besteht darin, dass der Nutzer mangels Steuerelemente\nkeinen Einfluss auf die Wiedergabe hat und das Audio in einer Endlosschleife läuft.\n\nTypische Anwendungsbeispiele: Atmos, Klangwelten,\nFeld-Aufnahmen"
         background_image:
           menu_item: Hintergrund-Bild
           text: ! '# Hintergrund-Bild
@@ -1106,48 +1136,7 @@ de:
 '
         background_video:
           menu_item: Hintergrund-Video
-          text: ! '# Hintergrund-Video
-
-
-            Bildschirmfüllendes Video ohne Steuerelemente im Loop
-
-            abgespielt Dieser Seitentyp entspricht dem
-
-            Hintergrund-Bild mit dem Unterschied, dass hier statt
-
-            eines Bildes ein Video angezeigt wird. Dieses startet
-
-            automatisch und wird ohne Steuerungselement abgespielt,
-
-            womit User Start und Stopp nicht beeinflussen können.  Da
-
-            das Video in einer Endlosschleife abgespielt wird, sollte
-
-            deshalb auf ausreichende Länge und/oder einen sauberen
-
-            übergang geachtet werden. Gleiches gilt für die im Video
-
-            enthaltene Tonspur.
-
-
-            Ein Hinweis zur Nutzung von Pageflow auf Smartphones: Um
-
-            ungewollten Datenverbrauch beim übertragen großer
-
-            Videodateien zu verhindern, werden diese auf mobilen
-
-            Endgeräten nicht ausgespielt. Stattdessen wird ein
-
-            Poster-Bild angezeigt, das automatisch aus dem Video
-
-            generiert wird. Optional kann dieses aber auch durch ein
-
-            selbstgewähltes Bild ersetzt werden.
-
-
-            Typische Anwendungsbeispiele: Intro, Kapitelübergang, Atmo
-
-'
+          text: ! "# Hintergrund-Video\n\n*Bildschirmfüllendes Video ohne Steuerelemente im Loop*\n    \nabgespielt Dieser Seitentyp entspricht dem\nHintergrund-Bild mit dem Unterschied, dass hier statt\neines Bildes ein Video angezeigt wird. Dieses startet\nautomatisch und wird ohne Steuerungselement abgespielt,\nwomit User Start und Stopp nicht beeinflussen können.  Da\ndas Video in einer Endlosschleife abgespielt wird, sollte\ndeshalb auf ausreichende Länge und/oder einen sauberen\nübergang geachtet werden. Gleiches gilt für die im Video\nenthaltene Tonspur.\n\nEin Hinweis zur Nutzung von Pageflow auf Smartphones: Um\nungewollten Datenverbrauch beim übertragen großer\nVideodateien zu verhindern, werden diese auf mobilen\nEndgeräten nicht ausgespielt. Stattdessen wird ein\nPoster-Bild angezeigt, das automatisch aus dem Video\ngeneriert wird. Optional kann dieses aber auch durch ein\nselbstgewähltes Bild ersetzt werden.\n\nTypische Anwendungsbeispiele: Intro, Kapitelübergang, Atmo"
         internal_links:
           menu_item: Seitenverweise
           text: ! '# Seitenverweise
@@ -1165,40 +1154,10 @@ de:
 '
         video:
           menu_item: Video
-          text: ! '# Video
-
-
-            Wiedergabe einer Videodatei mit Steuerelementen Anders als
-
-            bei „Hintergrund-Videos“ werden hier Textelemente nach ein
-
-            paar Sekunden automatisch ausgeblendet, um die
-
-            Aufmerksamkeit auf das Bewegtbild zu lenken. Mit
-
-            Steuerelementen kann der Nutzer das Video jederzeit
-
-            starten und pausieren, vor- oder zurückspulen. Ein
-
-            weiterer Unterschied ist, dass Du wählen kannst, ob ein
-
-            Video automatisch gestartet wird, sobald die Seite
-
-            angezeigt wird.  Als dezente Alternative oder Ergänzung zu
-
-            den normalen Texteingabemöglichkeiten, kann eine
-
-            sogenannte „Infobox“ mit Text befüllt werden.
-
-
-            Typische Anwendungsbeispiele: Filme aller Art, Interviews,
-
-            Portrait
-
-'
+          text: ! "# Video\n\n*Wiedergabe einer Videodatei mit Steuerelementen* \n   \nAnders als bei „Hintergrund-Videos“ werden hier Textelemente nach ein\npaar Sekunden automatisch ausgeblendet, um die\nAufmerksamkeit auf das Bewegtbild zu lenken. Mit\nSteuerelementen kann der Nutzer das Video jederzeit\nstarten und pausieren, vor- oder zurückspulen. Ein\nweiterer Unterschied ist, dass Du wählen kannst, ob ein\nVideo automatisch gestartet wird, sobald die Seite\nangezeigt wird.  Als dezente Alternative oder Ergänzung zu\nden normalen Texteingabemöglichkeiten, kann eine\nsogenannte „Infobox“ mit Text befüllt werden.\n\nUnter Optionen lässt sich ein automatisches weiterscrollen am Ende des Videos aktivieren. \nDas kann nützlich sein, um einen nahtlosen Übergang zur nächsten Seite herzustellen.\n\nTypische Anwendungsbeispiele: Filme aller Art, Interviews,\nPortrait"
       files:
         menu_item: Dateien verwalten
-        text: ! '# Daten verwalten
+        text: ! '# Dateien verwalten
 
 
           Pageflow verarbeitet alle gängigen Medien-Formate (Bild,
@@ -1285,9 +1244,7 @@ de:
 
           andere Beiträge nach Dateien zu durchsuchen und sie in den
 
-          bearbeiteten Beitrag zu übernehmen.
-
-'
+          bearbeiteten Beitrag zu übernehmen.'
       meta_data:
         menu_item: Titel und Optionen
         text: ! '# Titel und Optionen
@@ -1525,153 +1482,7 @@ de:
 '
       page_options:
         menu_item: Allgemeine Seitenoptionen
-        text: ! '# Allgemeine Seitenoptionen
-
-
-          ### Titel
-
-
-          Hier gibst Du den Titel der jeweiligen Seite ein. Dieser
-
-          wird nicht nur als Überschrift des Fliesstextes der Seite
-
-          ausgespielt, sondern dient zudem als Titel innerhalb der
-
-          Navigation und der Übersicht. Wird eine einzelne Seite in
-
-          sozialen Netzwerken geteilt, ist dieser Titel zugleich auch
-
-          der Titel des Social Media-Beitrages.
-
-
-          ### Titel ausblenden
-
-
-          Optional lässt sich der Titel auch ausblenden. Das heisst:
-
-          Er wird nicht mehr als Überschrift im Fliesstext
-
-          angezeigt. Er bleibt zur Identifikation einer Seite
-
-          allerdings in Navigation, Übersicht und geteilten Beträgen
-
-          erhalten.
-
-
-          ### Tagline und Untertitel
-
-
-          Hier kann wahlweise eine Tagline und/oder ein Untertitel
-
-          eingegeben werden. Falls Du ein Häkchen bei „Titel
-
-          ausblenden“ gesetzt hast, sind Tagline und Untertitel über
-
-          dem Fliesstext ebenfalls nicht zu sehen.
-
-
-          ### Text
-
-
-          Der Textblock kann mit den Buttons unterhalb des
-
-          Eingabefeldes formatiert werden. [ B=Fett / I=kursiv /
-
-          U=unterstrichen „gekippte acht“=Link/URL auf fremde Seite
-
-          einfügen].
-
-
-          Alle Änderungen sind in der linken Frontend-Ansicht
-
-          sichtbar, sobald das entsprechende Texteingabefeld im
-
-          Editierbereich verlassen wurde.
-
-
-          ### Textposition
-
-
-          Wähle hier, ob der Text auf der linken oder rechten Seite
-
-          angezeigt wird.
-
-
-          ### Intensität der Abblendung
-
-
-          Die Intensität des Farbverlaufs dient der Lesbarkeit von
-
-          Texten auf Videos oder Bildern.
-
-
-          Durch den Schieberegler kann der Bildhintergrund so stark
-
-          abgedunkelt bzw. aufgehellt werden, bis der Kontrast
-
-          zwischen Bild und Text ausreichend ist.
-
-
-          ### Farben invertieren
-
-
-          Beim Invertieren werden „hell“ und „dunkel“ vertauscht, die
-
-          sonst weiße Schrift ändert sich dabei automatisch in
-
-          schwarz.
-
-
-          Grundsätzlich gilt: Helle Schrift für dunkle Bilder, dunkle
-
-          Schrift für helle Bilder.
-
-
-          ### Thumbnail
-
-
-          Das Thumbnail ersetzt das ansonsten automatisch generierte
-
-          Vorschaubild in der Navigation und in der Übersicht.
-
-
-          ### In Navigationsleiste anzeigen
-
-
-          Ist diese Option nicht gesetzt, wird die jeweilige Seite
-
-          nicht in der Navigation repräsentiert, kann also nicht
-
-          direkt über die Navigation erreicht werden.
-
-
-          Dies bietet sich vor allem für Seiten an, die inhaltlich als
-
-          „Unterseiten“ einer anderen Seite anzusehen sind.
-
-
-          ### Übergangseffekt
-
-
-          Es gibt zwei verschiedene Effekte, die sichtbar sind, wenn
-
-          von einer Kapitelseite zur nächsten gewischt/gescrollt
-
-          wird. „Überblenden“ und „Scrollen“. Welcher Effekt verwendet
-
-          wird, kann individuell für jede Seite festgelegt werden.
-
-
-          ### Beschreibung für Übersicht
-
-
-          Hier kann der Text eingegeben werden, der angezeigt wird,
-
-          wenn der User in der Übersicht mit der Mouse über die
-
-          jeweilige Seite fährt. Außerdem entspricht der hier
-
-          eingegebene Text'
+        text: ! "# Allgemeine Seitenoptionen\n\n### Titel\n\nHier gibst Du den Titel der jeweiligen Seite ein. Dieser\nwird nicht nur als Überschrift des Fliesstextes der Seite\nausgespielt, sondern dient zudem als Titel innerhalb der\nNavigation und der Übersicht. Wird eine einzelne Seite in\nsozialen Netzwerken geteilt, ist dieser Titel zugleich auch\nder Titel des Social Media-Beitrages.\n\n### Titel ausblenden\n\nOptional lässt sich der Titel auch ausblenden. Das heisst:\nEr wird nicht mehr als Überschrift im Fliesstext\nangezeigt. Er bleibt zur Identifikation einer Seite\nallerdings in Navigation, Übersicht und geteilten Beträgen\nerhalten.\n\n### Tagline und Untertitel\n\nHier kann wahlweise eine Tagline und/oder ein Untertitel\neingegeben werden. Falls Du ein Häkchen bei „Titel\nausblenden“ gesetzt hast, sind Tagline und Untertitel über\ndem Fliesstext ebenfalls nicht zu sehen.\n\n### Text\n\nDer Textblock kann mit den Buttons unterhalb des\nEingabefeldes formatiert werden. [ B=Fett / I=kursiv /\nU=unterstrichen „gekippte acht“=Link/URL auf fremde Seite\neinfügen].\n\nAlle Änderungen sind in der linken Frontend-Ansicht\nsichtbar, sobald das entsprechende Texteingabefeld im\nEditierbereich verlassen wurde.\n\n### Textposition\n\nWähle hier, ob der Text auf der linken oder rechten Seite\nangezeigt wird.\n\n### Intensität der Abblendung\n\nDie Intensität des Farbverlaufs dient der Lesbarkeit von\nTexten auf Videos oder Bildern.\n\nDurch den Schieberegler kann der Bildhintergrund so stark\nabgedunkelt bzw. aufgehellt werden, bis der Kontrast\nzwischen Bild und Text ausreichend ist.\n\n### Farben invertieren\n\nBeim Invertieren werden „hell“ und „dunkel“ vertauscht, die\nsonst weiße Schrift ändert sich dabei automatisch in\nschwarz.\n\nGrundsätzlich gilt: Helle Schrift für dunkle Bilder, dunkle\nSchrift für helle Bilder.\n\n### Thumbnail\n\nDas Thumbnail ersetzt das ansonsten automatisch generierte\nVorschaubild in der Navigation und in der Übersicht.\n\n### In Navigationsleiste anzeigen\n\nIst diese Option nicht gesetzt, wird die jeweilige Seite\nnicht in der Navigation repräsentiert, kann also nicht\ndirekt über die Navigation erreicht werden.\n\nDies bietet sich vor allem für Seiten an, die inhaltlich als\n„Unterseiten“ einer anderen Seite anzusehen sind.\n\n### Übergangseffekt\n\nEs gibt verschiedene Effekte, die sichtbar sind, wenn von einer Kapitelseite zur nächsten gescrollt oder geklickt wird. Zur Auswahl stehen Seitenübergänge, wie „Überblendung“, „Schwarzblende“ oder „Harter Schnitt“ die sich vertikal auswirken, zudem kann auch „Horizontal Scrollen“ von rechts oder links ausgewählt werden. \n\nWelcher Effekt verwendet wird, kann unter „Optionen“ individuell für jede Seite festgelegt werden.\n\n### Text verzögert einblenden\n\nBestimme mit dieser Option, ob Text und Abblendung mit zeitlicher Verzögerung angezeigt werden.\nHierbei sehen User zunächst nur den Hintergrund, dann erscheinen Titel, Tagline und Untertitel und mit minimaler Verzögerung schließlich der Fließtext.\n\nInsgesamt stehen drei Verzögerungslängen zur Verfügung: kurz = 1 Sekunde, mittel = 3 Sekunde, lang = 5 Sekunde.\n\nDieses Feature eignet sich zum Beispiel für Intros oder Kapitelanfänge.\n\n### Beschreibung für Übersicht\n\nHier kann der Text eingegeben werden, der angezeigt wird,\nwenn der User in der Übersicht mit der Mouse über die\njeweilige Seite fährt. Außerdem entspricht der hier\neingegebene Text"
       page_types:
         menu_item: Seitentypen
         text: ! '# Seitentypen
@@ -1690,62 +1501,32 @@ de:
 '
       publishing:
         menu_item: Veröffentlichen
-        text: ! '# Veröffentlichen
+        text: ! "# Veröffentlichen\n\nKlicke in der Gliederung auf die Schaltfläche\n„Veröffentlichen“ um Deinen Pageflow zu publizieren. Eine\nReportage kann entweder zeitlich unbegrenzt oder bis zu\neinem bestimmten Stichtag veröffentlicht\nwerden. \n\nAußerdem gibt es die Möglichkeit, Pageflows mit einem Passwort zu schützen. \nHierzu muss einfach das entsprechende Häkchen bei „Mit Passwort schützen\" gesetzt werden. \nDas System verwendet als Benutzernamen den Namen des Kontos und generiert ein Passwort, \nwelches auch manuell geändert werden kann. \n\nBeiträge, die bereits veröffentlicht sind, können nachträglich mit einem Passwort geschützt werden - \nund andersherum können auch geschützte Beiträge anschließend mit erneutem Klick auf „Veröffentlichen“ vom Passwortschutz befreit werden. \nBei der Veröffentlichung werden die auszuführenden Schritte im Dialogfenster angezeigt und erklärt.\n\nVeröffentlichte Pageflows können jederzeit manuell\ndepubliziert werden. Sollte eine Reportage bereits\nveröffentlicht sein, bleiben Änderungen solange öffentlich\nunsichtbar, bis die Reportage erneut veröffentlicht wird.\nEine Reportage kann stets nur von einem Redakteur zur\ngleichen Zeit bearbeitet werden.\n\nVorschaubild zum Einbetten in Externe Webseiten Nach der\nVeröffentlichung erstellt das System ein Vorschaubild, das\nals iframe zur Verlinkung in eine externe Seite eingebunden\nwerden kann.  Anhand des ausgespielten Codes lässt sich die\nGröße des iframes frei einstellen. Hierbei ist jedoch eine\nMindesthöhe von 150px und und eine Mindestbreite von 220px\nzu beachten."
+      storylines:
+        menu_item: Erzählstränge
+        text: ! '# Erzählstränge
 
 
-          Klicke in der Gliederung auf die Schaltfläche
-
-          „Veröffentlichen“ um Deinen Pageflow zu publizieren. Eine
-
-          Reportage kann entweder zeitlich unbegrenzt oder bis zu
-
-          einem bestimmten Stichtag veröffentlicht
-
-          werden. Veröffentlichte Pageflows können jederzeit manuell
-
-          depubliziert werden. Sollte eine Reportage bereits
-
-          veröffentlicht sein, bleiben Änderungen solange öffentlich
-
-          unsichtbar, bis die Reportage erneut veröffentlicht wird.
-
-          Eine Reportage kann stets nur von einem Redakteur zur
-
-          gleichen Zeit bearbeitet werden.
+          Parallel zur linearen Erzählung von „oben nach unten“, können auch weitere Erzählstränge und Exkurse zu vertiefenden Inhalten erstellt werden. Erstelle dazu eine „Verweise“-Seite und verknüpfe die dort hinterlegten Verweise mit einem neuen Erzählstrang. Dabei kann frei gewählt werden, an welcher Stelle ein solcher Abzweig später wieder zum Hauptstrang führt oder auf einen weiteren Erzählstrang in der Geschichte verweist.
 
 
-          Vorschaubild zum Einbetten in Externe Webseiten Nach der
+          Erstellt werden diese Erzählstränge in der Gliederung über ein Klick auf die Plus-Schaltfläche neben der Erzählstrang-Auswahl. Dabei öffnet sich automatisch ein neues Kapitel, in dem dann weitere Seiten angelegt werden können. In jedem Erzählstrang kann eine „Übergeordnete Seite“ festgelegt werden. Zu dieser wird der User geleitet, wenn er am Ende des Erzählstrangs weiter scrollt. Mit einem Klick auf das Stift-Symbol kann die Zielseite ausgewählt werden.
 
-          Veröffentlichung erstellt das System ein Vorschaubild, das
 
-          als iframe zur Verlinkung in eine externe Seite eingebunden
-
-          werden kann.  Anhand des ausgespielten Codes lässt sich die
-
-          Größe des iframes frei einstellen. Hierbei ist jedoch eine
-
-          Mindesthöhe von 150px und und eine Mindestbreite von 220px
-
-          zu beachten.
-
-'
+          Achtung: Während des Editierens wird immer nur das aktuell ausgewählte Kapitel angezeigt. Um zu den anderen Kapiteln zu gelangen klicke auf das Auswahlmenü „Erzählstrang“. '
     helpers:
       entries:
         global_links: Globale Links
         image_rights: Bildrechte
     invalid_transition: Der gewünschte Statuswechsel ist nicht erlaubt.
-    pages:
-      templates:
-        audio:
-          hint: Audio
-        background_video:
-          hint: Video Loop
-        page:
-          goto_top: zum Anfang
-        video:
-          hint: Video
-        video_tag:
-          view_video: Video ansehen
+    page_transitions:
+      crossfade: Überblenden
+      cut: Harter Schnitt
+      fade: Hintergrund Blenden/Vordergrund Scrollen
+      fade_to_black: Schwarzblende
+      scroll: Scrollen
+      scroll_left: Scrollen (von links)
+      scroll_right: Scrollen (von rechts)
     quotas:
       exhausted: Quota verbraucht.
     ui:
@@ -1775,6 +1556,7 @@ de:
           title: Hier kannst Du Deinem Pageflow einen Titel geben, der in der Titelleiste des Browserfensters angezeigt wird. Unter diesem Titel wird Dein Pageflow nach der Veröffentlichung auch in Suchmaschinen indiziert werden
         pageflow/page:
           additional_title: Die Infobox wird über den Steuerelementen zum Starten und Stoppen der Wiedegabe angezeigt.
+          delayed_text_fade_in: Blendet die Textinhalte der Seite sowie die Abblendung zeitverzögert ein, nachdem man auf die Seite geblättert hat. So wird für eine gewisse Zeit der Blick auf den Hintergrund freigegeben.
           description: Hier kann der Text eingegeben werden, der angezeigt wird, wenn der User in der Übersicht mit der Mouse über die jeweilige Seite fährt. Außerdem entspricht der hier eingegebene Text auch dem Mouse-Over-Text beim Seitentyp „Seiten-Verweise“, sowie dem Text zum Teilen in sozialen Netzwerken.
           gradient_opacity: ! 'Die Intensität des Farbverlaufs dient der Lesbarkeit von Texten auf Videos oder Bildern.
 
@@ -1836,12 +1618,6 @@ de:
         analytics: Zählpixel
         mobile_navigation: Mobile Navigation
         navigation: Navigationsleiste
-      share_menu:
-        current_page: Diese Seite
-        entry: Diesen Beitrag
-        share_with_facebook: Auf Facebook teilen
-        share_with_google: Auf Google+ teilen
-        share_with_twitter: Auf Twitter teilen
       type_names:
         default_mobile_navigation: Navigationsmenü mit Thumbnails
         default_navigation: Navigationsleiste mit Thumbnails

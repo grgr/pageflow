@@ -9,7 +9,7 @@ For a high level introduction and example Pageflow stories see
 [pageflow.io](http://pageflow.io).
 
 In addition to this README, there is also a [Getting Started Wiki page](https://github.com/codevise/pageflow/wiki/Getting-Started)
-to guide you through the steps of setting up a Rails application with Pageflow 
+to guide you through the steps of setting up a Rails application with Pageflow
 on your development machine.
 
 ## Updating
@@ -46,10 +46,11 @@ Pageflow assumes the following choice of libraries:
 
 Pageflow runs in environments with:
 
-* Ruby 1.9.3 or higher
+* Ruby >= 1.9.3 and < 2.2.0 because of [ActiveAdmin](https://github.com/activeadmin/activeadmin/issues/3715)
 * Rails 4.0 or 4.1
 * Redis server (for Resque)
 * A database server supported by Active Record (tested with MySQL)
+* ImageMagick
 
 Accounts of the following cloud services have to be registered:
 
@@ -58,6 +59,23 @@ Accounts of the following cloud services have to be registered:
 * [Zencoder](http://zencoder.com) for video/audio encoding
 
 ## Installation
+
+Generate a new Rails application using the MySQL database adapter:
+
+    $ rails new my_pageflow --database=mysql
+    $ cd my_pageflow
+
+Do not name your application `"pageflow"` since it will cause conflicts
+which constant names created by Pageflow itself.
+
+### Database Setup
+
+Enter valid MySQL credentials inside `config/database.yml` and create
+the database:
+
+    $ rake db:create
+
+### Gem Dependencies
 
 Add this line to your application's Gemfile:
 
@@ -69,6 +87,7 @@ since, back when development started, no Rails 4 compatible version of
 Active Admin was available as a gem. You therefore need to bundle the
 `rails4` branch that we have forked into our github organization:
 
+    # Gemfile
     gem 'activeadmin', git: 'https://github.com/codevise/active_admin.git', branch: 'rails4'
     gem 'ransack'
     gem 'inherited_resources', '1.4.1'
@@ -87,22 +106,26 @@ Now you can run the generator to setup Pageflow and its dependencies:
     $ rails generate pageflow:install
 
 The generator will invoke Active Admin and Devise generators in turn
-and apply some configuration changes.
+and apply some configuration changes. When asked to overwrite the
+`db/seeds.rb` file, choose yes.
 
 To better understand Pageflow's configuration choices, you can run the
 single steps of the `install` generator one by one. See the wiki page
 [The Install Generator in Detail](https://github.com/codevise/pageflow/wiki/The-Install-Generator-in-Detail)
 for more. If you'd rather not look behind the scenes for now, you can
-safely read on for now.
+safely read on.
 
-## Database Setup
+### Database Migration
 
-Now it's time to migrate the database.
+_Devise migration name fix_: In some cases, the Devise generator creates
+a migration file without file extension. This needs to be fixed manually
+at the moment:
 
-    $ rake db:create db:migrate
+    $ rename 's/$/.rb/' db/migrate/*_devise_create_users
 
-If you do not like Rails' default database choices you might have to
-alter your `database.yml` first.
+Now you can migrate the database.
+
+    $ rake db:migrate
 
 Finally, you can populate the database with some example data, so
 things do not look too blank in development mode.
@@ -115,31 +138,50 @@ Pageflow stores files in S3 buckets also in development
 mode. Otherwise there's no way to have Zencoder encode them. See the
 wiki page [Setting up external services](https://github.com/codevise/pageflow/wiki/Setting-up-External-Services).
 
+The host application can utilize environment variables to configure the API keys for S3 and Zencoder. The variables can be found in the generated Pageflow initializer.
+
 For available configuration options and examples see the inline docs
 in `config/initializers/pageflow.rb` in your generated rails app.
 
+Ensure you have defined default url options in your environments
+files. Here is an example of `default_url_options` appropriate for a
+development environment in `config/environments/development.rb`:
+
+    config.action_mailer.default_url_options = {host: 'localhost:3000'}
+
+In production, `:host` should be set to the actual host of your
+application.
+
 ## Running Pageflow
 
-In addition to the Rails server, you need to start two Rake tasks for 
+In addition to the Rails server, you need to start two Rake tasks for
 the background job processing. First, start a Resque worker which handles
 jobs from all queues:
 
     $ QUEUE=* rake resque:work
-    
+
 Image and video processing are examples of jobs that are executes by these workers.
 
 Some jobs need to be executed repeatedly. For example, while videos are being
-encoded by Zencoder, there is a job that runs every few seconds to fetch the 
+encoded by Zencoder, there is a job that runs every few seconds to fetch the
 current progress. This delayed invocation of jobs is handled by the Resque
 Scheduler Rake task:
 
      $ QUEUE=* rake resque:scheduler
 
 Consider using the [foreman gem](https://github.com/ddollar/foreman) to start all of
-these processes (including the Rails server) with a single command in your 
+these processes (including the Rails server) with a single command in your
 development environment.
 
 ## Troubleshooting
 
-If you run into problems during the installation of Pageflow, please refer to the [Troubleshooting](https://github.com/codevise/pageflow/wiki/Troubleshooting) wiki 
+If you run into problems during the installation of Pageflow, please refer to the [Troubleshooting](https://github.com/codevise/pageflow/wiki/Troubleshooting) wiki
 page. If that doesn't help, consider [filing an issue](https://github.com/codevise/pageflow/issues?state=open).
+
+## Special Thanks
+
+We would like to express our special thanks to the following services
+for supporting Pageflow through free open source plans:
+
+[![BrowserStack](doc/supporter_logos/browser_stack.png)](https://browserstack.com)
+[![Travis CI](doc/supporter_logos/travis_ci.png)](https://travis-ci.com/)

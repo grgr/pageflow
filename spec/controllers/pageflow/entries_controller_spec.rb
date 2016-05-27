@@ -110,7 +110,7 @@ module Pageflow
         create(:membership, :entry => entry, :user => user)
 
         sign_in user
-        aquire_edit_lock(user, entry)
+        acquire_edit_lock(user, entry)
         patch(:update, :id => entry, :entry => {:title => 'new', :credits => 'credits'}, :format => 'json')
 
         expect(response.status).to eq(204)
@@ -122,7 +122,7 @@ module Pageflow
         create(:membership, :entry => entry, :user => user)
 
         sign_in user
-        aquire_edit_lock(user, entry)
+        acquire_edit_lock(user, entry)
         patch(:update, :id => entry, :entry => {:title => 'new', :credits => 'credits'}, :format => 'json')
 
         expect(entry.draft.reload.title).to eq('new')
@@ -149,6 +149,17 @@ module Pageflow
     end
 
     describe '#show' do
+      context 'with format */*' do
+        it 'responds with forbidden for entry published with password' do
+          entry = create(:entry, :published_with_password, password: 'abc123abc')
+
+          request.env['HTTP_ACCEPT'] = '*/*'
+          get(:show, id: entry)
+
+          expect(response.status).to eq(401)
+        end
+      end
+
       context 'with format html' do
         it 'responds with success for published entry' do
           entry = create(:entry, :published)
@@ -164,6 +175,23 @@ module Pageflow
           get(:show, :id => entry)
 
           expect(response.status).to eq(404)
+        end
+
+        it 'responds with forbidden for entry published with password' do
+          entry = create(:entry, :published_with_password, password: 'abc123abc')
+
+          get(:show, :id => entry)
+
+          expect(response.status).to eq(401)
+        end
+
+        it 'responds with success for entry published with password when correct password is given' do
+          entry = create(:entry, :published_with_password, password: 'abc123abc')
+
+          request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('Pageflow', 'abc123abc')
+          get(:show, :id => entry)
+
+          expect(response.status).to eq(200)
         end
 
         it 'uses locale of entry' do
@@ -206,7 +234,7 @@ module Pageflow
 
           get(:show, :id => entry)
 
-          expect(response.body).to have_selector('head meta[name=some_test]', :visible => false)
+          expect(response.body).to have_meta_tag.with_name('some_test')
         end
 
         context 'with configured entry_request_scope' do
@@ -235,11 +263,72 @@ module Pageflow
             expect(response.status).to eq(404)
           end
         end
+
+        context 'with page parameter' do
+          it 'renders social sharing meta tags for page' do
+            entry = create(:entry, :published)
+            storyline = create(:storyline, :revision => entry.published_revision)
+            chapter = create(:chapter, :storyline => storyline)
+            page = create(:page, :configuration => {:title => 'Shared page'}, :chapter => chapter)
+
+            get(:show, :id => entry, :page => page.perma_id)
+
+            expect(response.body).to have_meta_tag
+              .for_property('og:title')
+              .with_content_including('Shared page')
+          end
+        end
+
+        context 'https mode' do
+          let(:entry) { create(:entry, :published) }
+
+          it 'redirects to https when https is enforced' do
+            Pageflow.config.public_https_mode = :enforce
+
+            get(:show, id: entry)
+
+            expect(response).to redirect_to("https://test.host/entries/#{entry.to_param}")
+          end
+
+          it 'redirects to http when https is prevented' do
+            Pageflow.config.public_https_mode = :prevent
+            request.env['HTTPS'] = 'on'
+
+            get(:show, id: entry)
+
+            expect(response).to redirect_to("http://test.host/entries/#{entry.to_param}")
+          end
+
+          it 'stays on https when https mode is ignored' do
+            Pageflow.config.public_https_mode = :ignore
+            request.env['HTTPS'] = 'on'
+
+            get(:show, id: entry)
+
+            expect(response.status).to eq(200)
+          end
+
+          it 'stays on http when https mode is ignored' do
+            Pageflow.config.public_https_mode = :ignore
+
+            get(:show, id: entry)
+
+            expect(response.status).to eq(200)
+          end
+        end
       end
 
       context 'with format css' do
         it 'responds with success for published entry' do
           entry = create(:entry, :published)
+
+          get(:show, :id => entry, :format => 'css')
+
+          expect(response.status).to eq(200)
+        end
+
+        it 'responds with success for entry published with password' do
+          entry = create(:entry, :published_with_password, password: 'abc123abc')
 
           get(:show, :id => entry, :format => 'css')
 
@@ -252,6 +341,36 @@ module Pageflow
           get(:show, :id => entry, :format => 'css')
 
           expect(response.status).to eq(404)
+        end
+
+        it 'includes image rules for image files' do
+          entry = create(:entry, :published)
+          image_file = create(:image_file, :used_in => entry.published_revision)
+
+          get(:show, :id => entry, :format => 'css')
+
+          expect(response.body).to include(".image_#{image_file.id}")
+          expect(response.body).to include("url('#{image_file.attachment.url(:large)}')")
+        end
+
+        it 'includes poster image rules for video files' do
+          entry = create(:entry, :published)
+          video_file = create(:video_file, :used_in => entry.published_revision)
+
+          get(:show, :id => entry, :format => 'css')
+
+          expect(response.body).to include(".video_poster_#{video_file.id}")
+          expect(response.body).to include("url('#{video_file.poster.url(:large)}')")
+        end
+
+        it 'includes panorama style group rules for image files' do
+          entry = create(:entry, :published)
+          image_file = create(:image_file, :used_in => entry.published_revision)
+
+          get(:show, :id => entry, :format => 'css')
+
+          expect(response.body).to include(".image_panorama_#{image_file.id}")
+          expect(response.body).to include("url('#{image_file.attachment.url(:panorama_large)}')")
         end
       end
 
@@ -381,7 +500,8 @@ module Pageflow
     describe '#page' do
       it 'redirects to entry path with page perma id anchor' do
         entry = create(:entry, :published, :title => 'report')
-        chapter = create(:chapter, :revision => entry.published_revision)
+        storyline = create(:storyline, :revision => entry.published_revision)
+        chapter = create(:chapter, :storyline => storyline)
         page = create(:page, :chapter => chapter)
 
         get(:page, :id => entry, :page_index => 0)
@@ -391,7 +511,8 @@ module Pageflow
 
       it 'removes suffix appended with slash' do
         entry = create(:entry, :published, :title => 'report')
-        chapter = create(:chapter, :revision => entry.published_revision)
+        storyline = create(:storyline, :revision => entry.published_revision)
+        chapter = create(:chapter, :storyline => storyline)
         page = create(:page, :chapter => chapter)
 
         get(:page, :id => entry, :page_index => '0-some-title')
@@ -401,7 +522,8 @@ module Pageflow
 
       it 'skips hash if page index is invalid' do
         entry = create(:entry, :published, :title => 'report')
-        chapter = create(:chapter, :revision => entry.published_revision)
+        storyline = create(:storyline, :revision => entry.published_revision)
+        chapter = create(:chapter, :storyline => storyline)
         page = create(:page, :chapter => chapter)
 
         get(:page, :id => entry, :page_index => '100-not-there')
@@ -419,7 +541,8 @@ module Pageflow
         it 'responds with redirect for matching entry' do
           account = create(:account, :name => 'news')
           entry = create(:entry, :published, :account => account, :title => 'report')
-          chapter = create(:chapter, :revision => entry.published_revision)
+          storyline = create(:storyline, :revision => entry.published_revision)
+          chapter = create(:chapter, :storyline => storyline)
           page = create(:page, :chapter => chapter)
 
           request.host = 'news.example.com'

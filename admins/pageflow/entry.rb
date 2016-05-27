@@ -51,6 +51,8 @@ module Pageflow
         if authorized?(:manage, Folder)
           f.input :folder, :collection => collection_for_folders(f.object.account), :include_blank => true
         end
+
+        Pageflow.config_for(f.object).admin_form_inputs.build(:entry, f)
       end
       f.actions
     end
@@ -60,8 +62,30 @@ module Pageflow
         button_to(I18n.t('pageflow.admin.entries.depublish'),
                   pageflow.current_entry_revisions_path(entry),
                   :method => :delete,
-                  :data => {:rel => 'depublish', :confirm => I18n.t('pageflow.admin.entries.confirm_depublish')})
+                  :data => {
+                    :rel => 'depublish',
+                    :confirm => I18n.t('pageflow.admin.entries.confirm_depublish')
+                  })
       end
+    end
+
+    action_item :only => :show do
+      if authorized?(:duplicate, entry)
+        button_to(I18n.t('pageflow.admin.entries.duplicate'),
+                  duplicate_admin_entry_path(entry),
+                  :method => :post,
+                  :data => {
+                    :rel => 'duplicate',
+                    :confirm => I18n.t('pageflow.admin.entries.confirm_duplicate')
+                  })
+      end
+    end
+
+    member_action :duplicate, :method => :post do
+      entry = Entry.find(params[:id])
+      authorize!(:duplicate, entry)
+      new_entry = entry.duplicate
+      redirect_to(edit_admin_entry_path(new_entry))
     end
 
     member_action :snapshot, :method => :post do
@@ -90,7 +114,14 @@ module Pageflow
     controller do
       helper FoldersHelper
       helper EntriesHelper
+      helper Pageflow::Admin::FeaturesHelper
       helper Pageflow::Admin::RevisionsHelper
+
+      def update
+        update! do |success, _|
+          success.html { redirect_to(admin_entry_path(resource, params.slice(:tab))) }
+        end
+      end
 
       def scoped_collection
         params.key?(:folder_id) ? super.where(:folder_id => params[:folder_id]) : super
@@ -104,16 +135,33 @@ module Pageflow
       end
 
       def permitted_params
-        result = params.permit(:entry => [:title, :account_id, :theming_id, :folder_id])
-        restrict_attributes(params[:id], result[:entry]) if result[:entry]
+        result = params.permit(entry: permitted_attributes)
+
+        if result[:entry]
+          permit_feature_states(result[:entry])
+        end
+
         result
       end
 
       private
 
-      def restrict_attributes(id, attributes)
-        attributes.except!(:account_id, :theming_id) unless authorized?(:read, Account)
-        attributes.except!(:folder_id) unless authorized?(:manage, Folder)
+      def permitted_attributes
+        result = [:title]
+
+        target = params[:id] ? resource : current_user.account
+        result += Pageflow.config_for(target).admin_form_inputs.permitted_attributes_for(:entry)
+
+        result += [:account_id, :theming_id] if authorized?(:read, Account)
+        result << :folder_id if authorized?(:manage, Folder)
+        result
+      end
+
+      def permit_feature_states(attributes)
+        if authorized?(:read, Account)
+          feature_states = params[:entry][:feature_states].try(:permit!)
+          attributes.merge!(feature_states: feature_states || {})
+        end
       end
     end
   end

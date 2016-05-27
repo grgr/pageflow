@@ -5,6 +5,25 @@ ActionView::TestCase::TestController.send(:include, Pageflow::Engine.routes.url_
 
 module Pageflow
   describe EntriesHelper do
+    describe '#pretty_entry_title' do
+      it 'equals the entry title by default' do
+        entry = PublishedEntry.new(build(:entry, title: 'test'), build(:revision))
+        expect(helper.pretty_entry_title(entry)).to eq('test')
+      end
+
+      it 'includes the cname domain when present' do
+        theming = build(:theming, cname: 'www.example.com')
+        entry = PublishedEntry.new(build(:entry, title: 'test', theming: theming), build(:revision))
+        expect(helper.pretty_entry_title(entry)).to eq('test - example.com')
+      end
+
+      it 'does not include empty cname domain' do
+        theming = build(:theming, cname: '')
+        entry = PublishedEntry.new(build(:entry, title: 'test', theming: theming), build(:revision))
+        expect(helper.pretty_entry_title(entry)).to eq('test')
+      end
+    end
+
     describe '#pretty_entry_url' do
       it 'uses default host' do
         theming = create(:theming, cname: '')
@@ -40,66 +59,104 @@ module Pageflow
       end
     end
 
+    describe '#entry_file_rights' do
+      it 'returns comma separated list of file rights' do
+        revision = create(:revision)
+        image_file = create(:image_file, rights: 'My Company', used_in: revision)
+        image_file = create(:image_file, rights: 'My Photographer', used_in: revision)
+        entry = PublishedEntry.new(create(:entry), revision)
+
+        result = helper.entry_file_rights(entry)
+
+        expect(result).to include(': My Company, My Photographer')
+      end
+
+      it 'falls back to default file rights' do
+        revision = create(:revision)
+        image_file = create(:image_file, used_in: revision)
+        account = create(:account, default_file_rights: 'My Account')
+        entry = PublishedEntry.new(create(:entry, account: account), revision)
+
+        result = helper.entry_file_rights(entry)
+
+        expect(result).to include(': My Account')
+      end
+
+      it 'does not insert extra comma if a file has no rights and defaults are not configured' do
+        revision = create(:revision)
+        image_file = create(:image_file, used_in: revision)
+        image_file = create(:image_file, rights: 'My Photographer', used_in: revision)
+        entry = PublishedEntry.new(create(:entry), revision)
+
+        result = helper.entry_file_rights(entry)
+
+        expect(result).to include(': My Photographer')
+      end
+
+      it 'returns empty string if no rights are defined' do
+        revision = create(:revision)
+        image_file = create(:image_file, used_in: revision)
+        entry = PublishedEntry.new(create(:entry), revision)
+
+        result = helper.entry_file_rights(entry)
+
+        expect(result).to eq('')
+      end
+    end
+
     describe '#entry_stylesheet_link_tag' do
       it 'returns revision css for published entry with custom revision' do
         revision = build_stubbed(:revision)
         entry = PublishedEntry.new(build_stubbed(:entry), revision)
 
-        expect(helper.entry_stylesheet_link_tag(entry)).to include(%Q'href="/revisions/#{revision.id}.css')
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).to include(%Q'href="/revisions/#{revision.id}.css')
       end
 
       it 'returns entry css for published entry without custom revision' do
         revision = build_stubbed(:revision, :published)
         entry = PublishedEntry.new(build_stubbed(:entry, published_revision: revision))
 
-        expect(helper.entry_stylesheet_link_tag(entry)).to include(%Q'href="/entries/#{entry.entry.id}.css')
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).to include(%Q'href="/entries/#{entry.entry.id}.css')
       end
 
       it 'appends revision cache key for published entry without custom revision' do
         revision = build_stubbed(:revision, :published)
         entry = PublishedEntry.new(build_stubbed(:entry, published_revision: revision))
 
-        expect(helper.entry_stylesheet_link_tag(entry)).to include(%Q'href="/entries/#{entry.entry.id}.css?v=#{ERB::Util.url_encode(revision.cache_key)}')
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).to include("v=#{ERB::Util.url_encode(revision.cache_key)}")
       end
 
       it 'appends revision cache key for published entry with custom revision' do
         revision = build_stubbed(:revision, :published)
         entry = PublishedEntry.new(build_stubbed(:entry), revision)
 
-        expect(helper.entry_stylesheet_link_tag(entry)).to include(%Q'href="/revisions/#{revision.id}.css?v=#{ERB::Util.url_encode(revision.cache_key)}')
+        result = helper.entry_stylesheet_link_tag(entry)
+
+        expect(result).to include("v=#{ERB::Util.url_encode(revision.cache_key)}")
       end
 
       it 'appends revision cache key for draft entry' do
         revision = build_stubbed(:revision)
         entry = DraftEntry.new(build_stubbed(:entry, draft: revision))
 
-        expect(helper.entry_stylesheet_link_tag(entry)).to include(%Q'href="/revisions/#{revision.id}.css?v=#{ERB::Util.url_encode(revision.cache_key)}')
-      end
-    end
+        result = helper.entry_stylesheet_link_tag(entry)
 
-    describe '#entry_pages_json_seed' do
-      it 'includes id, perma_id and configuration' do
-        revision = create(:revision, :published)
-        chapter = create(:chapter, revision: revision)
-        page = create(:page, chapter: chapter, configuration: {text: 'some text'})
-        entry = PublishedEntry.new(create(:entry, published_revision: revision))
-
-        result = JSON.parse(helper.entry_pages_json_seed(entry))
-
-        expect(result[0]['id']).to eq(page.id)
-        expect(result[0]['perma_id']).to eq(page.perma_id)
-        expect(result[0]['configuration']['text']).to eq('some text')
+        expect(result).to include("v=#{ERB::Util.url_encode(revision.cache_key)}")
       end
 
-      it 'escapes illegal characters' do
-        revision = create(:revision, :published)
-        chapter = create(:chapter, revision: revision)
-        page = create(:page, chapter: chapter, configuration: {text: "some\u2028text"})
-        entry = PublishedEntry.new(create(:entry, published_revision: revision))
+      it 'appends pageflow version' do
+        revision = build_stubbed(:revision)
+        entry = DraftEntry.new(build_stubbed(:entry, draft: revision))
 
-        result = helper.entry_pages_json_seed(entry)
+        result = helper.entry_stylesheet_link_tag(entry)
 
-        expect(result).to include('some\\u2028text')
+        expect(result).to include("p=#{Pageflow::VERSION}")
       end
     end
   end

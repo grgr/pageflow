@@ -1,11 +1,12 @@
 <div class="navigation_mobile" data-widget="default_mobile_navigation">
+  <div class="parent_page" title="<%= t('pageflow.public.back') %>"></div>
   <div class="menu index"></div>
   <div class="menu sharing"></div>
   <div class="menu imprint"></div>
   <div class="overview_mobile">
-      <span class="heading-1"><%= t('.overview') %></span>
+      <span class="heading-1"><%= t('pageflow.public.overview') %></span>
       <div class="wrapper">
-        <ul>
+        <ul class="pages">
           <%= render :partial => 'pageflow/entries/navigation/page',
                      :collection => entry_mobile_navigation_pages(entry),
                      :locals => {:image_style => :thumbnail_overview_mobile, :image_width => nil} %>
@@ -13,7 +14,7 @@
       </div>
   </div>
   <div class="imprint_mobile">
-      <span class="heading-1"><%= t('.imprint') %></span>
+      <span class="heading-1"><%= t('pageflow.public.imprint') %></span>
       <div class="wrapper">
         <ul>
           <li class="credits">

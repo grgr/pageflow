@@ -5,12 +5,12 @@ Pageflow.configure do |config|
   config.paperclip_filesystem_root = Rails.root.join('tmp/attachments/production/')
 
   if Rails.env.test?
-    config.paperclip_s3_default_options = {
+    config.paperclip_s3_default_options.merge!({
       :storage => :filesystem,
       :path => ':rails_root/tmp/attachments/test/s3/:class/:attachment/:id_partition/:style/:filename'
-    }
+    })
   else
-    config.paperclip_s3_default_options = {
+    config.paperclip_s3_default_options.merge!({
       :storage => :s3,
       :s3_headers => {'Expires' => 1.year.from_now.httpdate},
       :s3_options => {:max_retries => 10},
@@ -24,20 +24,25 @@ Pageflow.configure do |config|
       # master, but for us not deleting old files is good enough. They
       # might be in the CDN anyway.
       :keep_old_files => true
-    }
+    })
   end
 
-  config.paperclip_filesystem_default_options = {
+  config.paperclip_filesystem_default_options.merge!({
     :storage => :filesystem,
     :path => ':pageflow_filesystem_root/:class/:attachment/:id_partition/:style/:filename',
     :url => 'not_uploaded_yet'
-  }
+  })
 
   config.thumbnail_styles = {
     thumbnail: {
       geometry: '100x100#',
       format: :JPG
     },
+    thumbnail_large: {
+      geometry: '560x315#',
+      format: :JPG
+    },
+
     navigation_thumbnail_small: {
       geometry: '85x47#',
       format: :JPG
@@ -72,7 +77,7 @@ if Rails.env.development?
   end
 
   Paperclip.interpolates(:host) do |attachment, style|
-    Socket.gethostname
+    ENV.fetch('PAGEFLOW_ATTACHMENTS_SCOPE_NAME') { Socket.gethostname }
   end
 end
 

@@ -1,12 +1,19 @@
 module Pageflow
   class Revision < ActiveRecord::Base
+    PAGE_ORDER = [
+      'pageflow_storylines.position ASC',
+      'pageflow_chapters.position ASC',
+      'pageflow_pages.position ASC'
+    ].join(',')
+
     belongs_to :entry, :touch => true
     belongs_to :creator, :class_name => 'User'
     belongs_to :restored_from, :class_name => 'Pageflow::Revision'
 
     has_many :widgets, :as => :subject
-    has_many :chapters, -> { order('position ASC') }
-    has_many :pages, -> { reorder('pageflow_chapters.position ASC, pageflow_pages.position ASC') }, :through => :chapters
+    has_many :storylines, -> { order('pageflow_storylines.position ASC') }
+    has_many :chapters, -> { order('position ASC') }, through: :storylines
+    has_many :pages, -> { reorder(PAGE_ORDER) }, through: :storylines
 
     has_many :file_usages
 
@@ -33,6 +40,11 @@ module Pageflow
 
     validate :published_until_unchanged, :if => :published_until_was_in_past?
     validate :published_until_blank, :if => :published_at_blank?
+
+    def main_storyline_chapters
+      main_storyline = storylines.first
+      main_storyline ? main_storyline.chapters : Chapter.none
+    end
 
     def files(model)
       model
@@ -76,14 +88,15 @@ module Pageflow
 
     def copy(&block)
       revision = dup
+
       yield(revision) if block_given?
 
       widgets.each do |widget|
         widget.copy_to(revision)
       end
 
-      chapters.each do |chapter|
-        chapter.copy_to(revision)
+      storylines.each do |storyline|
+        storyline.copy_to(revision)
       end
 
       file_usages.each do |file_usage|

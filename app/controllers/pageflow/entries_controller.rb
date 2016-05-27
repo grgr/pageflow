@@ -1,8 +1,10 @@
 module Pageflow
   class EntriesController < Pageflow::ApplicationController
+    include PublicHttpsMode
+
     before_filter :authenticate_user!, :except => [:index, :show, :page]
 
-    before_filter :prevent_ssl, :only => [:index, :show], :unless => lambda { |controller| controller.request.format.json? }
+    before_filter :check_public_https_mode, only: [:index, :show], unless: lambda { |controller| controller.request.format.json? }
 
     helper_method :render_to_string
 
@@ -22,12 +24,15 @@ module Pageflow
           @entry = PublishedEntry.find(params[:id], entry_request_scope)
           I18n.locale = @entry.locale
 
+          if !request.format.css? && @entry.password_protected?
+            check_entry_password(@entry)
+          end
+
           if params[:page].present?
-            @entry.share_target = Page.find_by_perma_id(params[:page])
+            @entry.share_target = @entry.pages.find_by_perma_id(params[:page])
           else
             @entry.share_target = @entry
           end
-
         end
         format.json do
           authenticate_user!
@@ -61,6 +66,8 @@ module Pageflow
     def edit
       @entry = DraftEntry.find(params[:id])
       authorize!(:edit, @entry.to_model)
+
+      @entry_config = Pageflow.config_for(@entry)
     end
 
     def update
@@ -77,11 +84,18 @@ module Pageflow
     def entry_params
       params.require(:entry).permit(:title, :summary, :credits, :manual_start, :home_url, :home_button_enabled,
                                     :emphasize_chapter_beginning, :emphasize_new_pages,
-                                    :share_image_id, :share_image_x, :share_image_y, :locale)
+                                    :share_image_id, :share_image_x, :share_image_y, :locale,
+                                    :author, :publisher, :keywords)
     end
 
     def entry_request_scope
       Pageflow.config.public_entry_request_scope.call(Entry, request)
+    end
+
+    def check_entry_password(entry)
+      authenticate_or_request_with_http_basic('Pageflow') do |_, password|
+        entry.authenticate(password)
+      end
     end
   end
 end

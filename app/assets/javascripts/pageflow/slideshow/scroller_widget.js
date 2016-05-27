@@ -11,24 +11,29 @@
     doubleBumpThreshold: 500,
 
     _create: function() {
-      this.iscroll = new IScroll(this.element[0], {
+      this.iscroll = new IScroll(this.element[0], _.extend({
         mouseWheel: true,
         bounce: false,
         keyBindings: true,
         probeType: 2,
         preventDefault: false
-      });
+      }, _.pick(this.options, 'freeScroll', 'scrollX', 'noMouseWheelScrollX')));
 
       this.iscroll.disable();
 
-      this._initMousewheelBump('up');
-      this._initMousewheelBump('down');
+      if (pageflow.entryData.getThemingOption('page_change_by_scrolling')) {
+        this._initMousewheelBump('up');
+        this._initMousewheelBump('down');
+        this._initDragGestureBump();
+      }
+
       this._initKeyboardBump('up');
       this._initKeyboardBump('down');
-      this._initDragGestureBump();
       this._initNearBottomEvents();
       this._initNearTopEvents();
       this._initMoveEvents();
+
+      this._onScrollEndCallbacks = new $.Callbacks();
     },
 
     enable: function() {
@@ -49,6 +54,25 @@
       }
     },
 
+    scrollBy: function(deltaX, deltaY, time, easing) {
+      this.scrollTo(
+        this.iscroll.x + deltaX,
+        this.iscroll.y + deltaY,
+        time,
+        easing
+      );
+    },
+
+    scrollTo: function(x, y, time, easing) {
+      this.iscroll.scrollTo(
+        Math.max(Math.min(x, 0), this.iscroll.maxScrollX),
+        Math.max(Math.min(y, 0), this.iscroll.maxScrollY),
+        time,
+        easing
+      );
+      this._onScrollEndCallbacks.fire();
+    },
+
     refresh: function() {
       this.iscroll.refresh();
     },
@@ -61,8 +85,20 @@
       this.iscroll.disable();
     },
 
+    positionX: function() {
+      return this.iscroll.x;
+    },
+
     positionY: function() {
       return this.iscroll.y;
+    },
+
+    maxX: function() {
+      return this.iscroll.maxScrollX;
+    },
+
+    maxY: function() {
+      return this.iscroll.maxScrollY;
     },
 
     onScroll: function(callback) {
@@ -71,6 +107,7 @@
 
     onScrollEnd: function(callback) {
       this.iscroll.on('scrollEnd', callback);
+      this._onScrollEndCallbacks.add(callback);
     },
 
     _initMoveEvents: function() {

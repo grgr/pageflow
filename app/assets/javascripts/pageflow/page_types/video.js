@@ -2,7 +2,7 @@ pageflow.pageType.register('video', _.extend({
 
   enhance: function(pageElement, configuration) {
     pageElement.find('.contentText').before(pageElement.find('.page_header'));
-    this._initVideoPlayer(pageElement);
+    this._initVideoPlayer(pageElement, configuration);
   },
 
   preload: function(pageElement, configuration) {
@@ -11,6 +11,10 @@ pageflow.pageType.register('video', _.extend({
 
   prepare: function(pageElement, configuration) {
     this.videoPlayer.ensureCreated();
+  },
+
+  unprepare: function(pageElement, configuration) {
+    this.videoPlayer.scheduleDispose();
   },
 
   activating: function(pageElement, configuration) {
@@ -24,13 +28,9 @@ pageflow.pageType.register('video', _.extend({
 
     this.videoPlayer.ensureCreated();
 
-    if (pageflow.features.has('mobile platform')) {
+    if (pageflow.browser.has('mobile platform')) {
       this.videoPlayer.showPosterImage();
     }
-
-    this.listenTo(pageflow.settings, "change:volume", function(model, value) {
-      this.fadeSound(this.videoPlayer, value, 10);
-    });
 
     $('body').on('keyup', function(e) {
       if(e.keyCode == 32){
@@ -49,20 +49,16 @@ pageflow.pageType.register('video', _.extend({
     var videoPlayer = this.videoPlayer;
     var that = this;
 
-    if (pageflow.features.has('mobile platform')) {
+    if (pageflow.browser.has('mobile platform')) {
        videoPlayer.src(videoPlayer.srcFromOptions()); // needed for iOS
     }
     else {
       videoPlayer.prebuffer().done(function() {
         videoPlayer.hidePosterImage();
 
-        if (configuration.autoplay === false) {
-          videoPlayer.volume(pageflow.settings.get('volume'));
-        } else {
+        if (configuration.autoplay !== false) {
           that.fadeInTimeout = setTimeout(function() {
-            videoPlayer.volume(0);
-            videoPlayer.play();
-            that.fadeSound(videoPlayer, pageflow.settings.get('volume'), 1000);
+            videoPlayer.playAndFadeIn(1000);
           }, 1000);
         }
       });
@@ -74,10 +70,13 @@ pageflow.pageType.register('video', _.extend({
     this.fadeSound(this.videoPlayer, 0, 400);
     this.stopListening();
     $('body').off('keyup');
+
+    $('.entry .scroll_indicator').removeClass('faded');
+    clearTimeout(this.scrollIndicatorTimeout);
   },
 
   deactivated: function(pageElement, configuration) {
-    if (pageflow.features.has('mobile platform')) {
+    if (pageflow.browser.has('mobile platform')) {
       this.videoPlayer.showPosterImage();
     }
     this.videoPlayer.pause();
@@ -96,28 +95,30 @@ pageflow.pageType.register('video', _.extend({
 
     pageElement.find('.shadow').css({opacity: configuration.get('gradient_opacity') / 100});
 
-    var videoPlayer = this.videoPlayer;
-    videoPlayer.ensureCreated();
-
-    if (!this.srcDefined) {
-      videoPlayer.ready(function() {
-        videoPlayer.src(configuration.getVideoFileSources('video_file_id'));
-      });
-    }
-
-    if (!this.srcDefined || configuration.hasChanged('video_file_id')) {
-      this.srcDefined = true;
-      this.videoPlayer.src(configuration.getVideoFileSources('video_file_id'));
-    }
-
     this.updateVideoPoster(pageElement, configuration.getVideoPosterUrl());
   },
 
-  _initVideoPlayer: function(pageElement) {
+  embeddedEditorViews: function() {
+    return {
+      '.videoWrapper': {
+        view: pageflow.LazyVideoEmbeddedView,
+        options: {
+          propertyName: 'video_file_id'
+        }
+      }
+    };
+  },
+
+  _initVideoPlayer: function(pageElement, configuration) {
+    var that = this;
+
     var videoPlayer = new pageflow.VideoPlayer.Lazy(pageElement.find('[data-template=video]'), {
       bufferUnderrunWaiting: true,
       controls: true,
       customControlsOnMobile: true,
+
+      volumeFading: true,
+      hooks: pageflow.atmo.createMediaPlayerHooks(configuration),
 
       mediaEvents: true,
       context: {
@@ -129,6 +130,7 @@ pageflow.pageType.register('video', _.extend({
     });
 
     this.videoPlayer = videoPlayer;
+    pageElement.find('.videoWrapper').data('videoPlayer', videoPlayer);
 
     videoPlayer.ready(function() {
       videoPlayer.showPosterImage();
@@ -142,6 +144,10 @@ pageflow.pageType.register('video', _.extend({
           video =  pageElement.find('video');
 
       controlBar.appendTo(controls);
+
+      var additionalControlsHtml = '<div class="player_skip" tabindex="4"></div><div class="player_fullscreen" tabindex="4"></div><div class="player_volume"><div class="volume-control"><div tabindex="0" class="player_volume_bar player_slider volume-slider"><div class="player_volume_level volume-level"></div><div class="player_volume_handle player_slider_handle volume-handle"></div></div></div><div class="player_mute volume-mute-button" tabindex="4"></div></div>';
+
+      $(additionalControlsHtml).appendTo(controlBar);
       //pageElement.find('.scroller').after(controls);
 
       controlBar.addClass('vjs-default-skin vjs-player');
@@ -157,6 +163,16 @@ pageflow.pageType.register('video', _.extend({
         }
       });
 
+      controls.find('a, [tabindex]').on({
+        focus: function() {
+          controls.addClass('focussed');
+        },
+
+        blur: function() {
+          controls.removeClass('focussed');
+        }
+      });
+
       videoPlayer.on('bufferunderrun', function() {
         loadingSpinner.addClass('showing-for-underrun');
       });
@@ -165,7 +181,7 @@ pageflow.pageType.register('video', _.extend({
         loadingSpinner.removeClass('showing-for-underrun');
       });
 
-      if (pageflow.features.has('phone platform')) {
+      if (pageflow.browser.has('phone platform')) {
         // alternate poster image handling
         $("<div class='vjs-poster-mobile' style='" +
           poster.attr('style') +
@@ -184,6 +200,8 @@ pageflow.pageType.register('video', _.extend({
           scrollIndicator = $('.entry .scroll_indicator'),
           pageContent = pageElement.find('.scroller, .controls, .shadow');
 
+      pageContent.addClass('lock-showing');
+
       videoPlayer.on("pause", function() {
         pageContent.addClass('lock-showing');
 
@@ -191,20 +209,31 @@ pageflow.pageType.register('video', _.extend({
         clearTimeout(scrollIndicatorTimeout);
       });
 
+      videoPlayer.on('beforeplay', function() {
+        loadingSpinner.addClass('showing-for-underrun');
+      });
+
       videoPlayer.on("play", function() {
         pageContent.removeClass('lock-showing');
 
-        scrollIndicatorTimeout = setTimeout(function() {
-          scrollIndicator.addClass('faded');
-        }, 2000);
+        if (pageElement.hasClass('active')) {
+          clearTimeout(scrollIndicatorTimeout);
+          scrollIndicatorTimeout = that.scrollIndicatorTimeout = setTimeout(function() {
+            scrollIndicator.addClass('faded');
+          }, 2000);
+        }
       });
 
       videoPlayer.on("ended", function() {
         scrollIndicator.removeClass('faded');
         clearTimeout(scrollIndicatorTimeout);
 
-        if(pageflow.features.has('mobile platform')) {
-          this.showPosterImage();
+        if (pageflow.browser.has('mobile platform')) {
+          videoPlayer.showPosterImage();
+        }
+
+        if (pageElement.hasClass('active') && configuration.auto_change_page_on_ended) {
+          pageflow.slides.next();
         }
       });
 
@@ -212,9 +241,17 @@ pageflow.pageType.register('video', _.extend({
       $('body').on('keydown', autoHideControls);
       pageElement.find('.content').on('touchstart', autoHideControls);
 
+      pageElement.find('.volume-control').volumeSlider({
+        orientation: 'v'
+      });
+
+      pageElement.find('.player_mute').muteButton();
+      pageElement.find('.player_skip').skipPageButton();
+      pageElement.find('.player_fullscreen').fullscreenButton();
+
       function autoHideControls() {
         showControls();
-        if (!pageflow.features.has('phone platform')) {
+        if (!pageflow.browser.has('phone platform')) {
           clearTimeout(timeout);
           timeout = setTimeout(hideControls, 2000);
         }

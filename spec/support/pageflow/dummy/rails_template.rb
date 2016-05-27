@@ -8,17 +8,22 @@ run 'rm Gemfile'
 
 # Setup database.yml to use credentials from env variable.
 
+copy_file('database.yml', 'config/database.yml', force: true)
+
+rails_version_string = Rails::VERSION::STRING.tr!('.', '_')
+
+engine_name = ENV.fetch('PAGEFLOW_PLUGIN_ENGINE', 'pageflow')
+database_prefix = "#{engine_name}-rails-#{rails_version_string}"
+
 gsub_file('config/database.yml',
           /^  database: /,
-          "  database: #{ENV.fetch('PAGEFLOW_PLUGIN_ENGINE', 'pageflow')}-")
+          "  database: #{database_prefix}-")
 
-gsub_file('config/database.yml',
-          /^  username:.*\n/,
-          "  username: \"<%= ENV.fetch('PAGEFLOW_DB_USER', 'root') %>\"\n")
-
-gsub_file('config/database.yml',
-          /^  password:.*\n/,
-          "  password: \"<%= ENV.fetch('PAGEFLOW_DB_PASSWORD', '') %>\"\n")
+append_to_file('config/application.rb', <<-END)
+  if ENV['PAGEFLOW_DB_HOST'].present?
+    ActiveRecord::Tasks::DatabaseTasks::LOCAL_HOSTS << ENV['PAGEFLOW_DB_HOST']
+  end
+END
 
 # Recreate db. Ignore if it does not exist.
 
@@ -49,6 +54,7 @@ prepend_to_file('config/initializers/pageflow.rb',
 
 copy_file('create_test_hosted_file.rb', 'db/migrate/00000000000000_create_test_hosted_file.rb')
 copy_file('create_test_revision_component.rb', 'db/migrate/00000000000001_create_test_revision_component.rb')
+copy_file('add_custom_fields.rb', 'db/migrate/99990000000000_add_custom_fields.rb')
 
 # Devise bug fix: rename migrations without file extension
 

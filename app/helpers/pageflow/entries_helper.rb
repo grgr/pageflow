@@ -1,17 +1,19 @@
 module Pageflow
   module EntriesHelper
-    include RenderJsonHelper
+    def pretty_entry_title(entry)
+      [entry.title, entry.theming.cname_domain.presence].compact.join(' - ')
+    end
 
     def pretty_entry_url(entry)
       pageflow.short_entry_url(entry.to_model, Pageflow.config.theming_url_options(entry.theming))
     end
 
     def entry_file_rights(entry)
-      rights = [:audio_files, :image_files, :video_files].map do |collection|
-        entry.send(collection).map do |file|
-          file.rights.presence || entry.account.default_file_rights
+      rights = Pageflow.config.file_types.map do |file_type|
+        entry.files(file_type.model).map do |file|
+          file.rights.presence || entry.account.default_file_rights.presence
         end
-      end.flatten.sort.uniq
+      end.flatten.compact.sort.uniq
 
       if rights.any?
         content_tag :p, class: 'rights' do
@@ -43,7 +45,14 @@ module Pageflow
     end
 
     def entry_stylesheet_link_tag(entry)
-      stylesheet_link_tag(polymorphic_path(entry.stylesheet_model, v: entry.stylesheet_cache_key, format: 'css'), media: 'all')
+      url = polymorphic_path(entry.stylesheet_model,
+                             v: entry.stylesheet_cache_key,
+                             p: Pageflow::VERSION,
+                             format: 'css')
+
+      stylesheet_link_tag(url,
+                          media: 'all',
+                          data: {name: 'entry'})
     end
 
     def entry_mobile_navigation_pages(entry)
@@ -72,10 +81,6 @@ module Pageflow
     def entry_summary(entry)
       return '' if entry.summary.blank?
       strip_tags(entry.summary.gsub(/<br ?\/?>/, ' ').squish)
-    end
-
-    def entry_pages_json_seed(entry)
-      sanitize_json(entry.pages.to_json(only: [:id, :perma_id, :configuration])).html_safe
     end
   end
 end

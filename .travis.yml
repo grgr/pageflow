@@ -1,5 +1,5 @@
 language: ruby
-rvm: 1.9.3
+rvm: 2.1
 
 # User container based travis infrastructure which allows caching
 # features for open source projects.
@@ -18,5 +18,5 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 script:
-  - exec/rspec
-  - exec/teaspoon
+  - bin/rspec
+  - bin/teaspoon

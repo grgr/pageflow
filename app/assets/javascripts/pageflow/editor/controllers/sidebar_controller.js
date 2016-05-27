@@ -4,9 +4,10 @@ pageflow.SidebarController = Backbone.Marionette.Controller.extend({
     this.entry = options.entry;
   },
 
-  index: function() {
+  index: function(storylineId) {
     this.region.show(new pageflow.EditEntryView({
-      model: this.entry
+      model: this.entry,
+      storylineId: storylineId
     }));
   },
 
@@ -45,6 +46,12 @@ pageflow.SidebarController = Backbone.Marionette.Controller.extend({
     pageflow.editor.setDefaultHelpEntry('pageflow.help_entries.publish');
   },
 
+  storyline: function(id) {
+    this.region.show(new pageflow.EditStorylineView({
+      model: this.entry.storylines.get(id)
+    }));
+  },
+
   chapter: function(id) {
     this.region.show(new pageflow.EditChapterView({
       model: this.entry.chapters.get(id)
@@ -60,5 +67,15 @@ pageflow.SidebarController = Backbone.Marionette.Controller.extend({
     }));
 
     pageflow.editor.setDefaultHelpEntry(page.pageType().help_entry_translation_key);
+  },
+
+  pageLink: function(linkId) {
+    var pageId = linkId.split(':')[0];
+    var page = pageflow.pages.getByPermaId(pageId);
+
+    this.region.show(new pageflow.EditPageLinkView({
+      model: page.pageLinks().get(linkId),
+      page: page
+    }));
   }
 });

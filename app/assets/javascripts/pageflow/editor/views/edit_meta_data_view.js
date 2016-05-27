@@ -23,15 +23,20 @@ pageflow.EditMetaDataView = Backbone.Marionette.Layout.extend({
     });
 
     configurationEditor.tab('general', function() {
-      this.input('title', pageflow.TextInputView);
+      this.input('title', pageflow.TextInputView, {
+        placeholder: entry.attributes.entry_title
+      });
       this.input('locale', pageflow.SelectInputView, {
-        values: pageflow.config.availableLocales,
-        texts: _.map(pageflow.config.availableLocales, function(locale) {
-          return I18n.t('language', {locale: locale});
+        values: pageflow.config.availablePublicLocales,
+        texts: _.map(pageflow.config.availablePublicLocales, function(locale) {
+          return I18n.t('pageflow.public._language', {locale: locale});
         })
       });
 
       this.input('credits', pageflow.TextAreaInputView);
+      this.input('author', pageflow.TextInputView);
+      this.input('publisher', pageflow.TextInputView);
+      this.input('keywords', pageflow.TextInputView);
     });
 
     configurationEditor.tab('widgets', function() {
@@ -59,7 +64,10 @@ pageflow.EditMetaDataView = Backbone.Marionette.Layout.extend({
         collection: pageflow.imageFiles,
         fileSelectionHandler: 'entryConfiguration'
       });
-      this.input('summary', pageflow.TextAreaInputView);
+      this.input('summary', pageflow.TextAreaInputView, {
+        disableRichtext: true,
+        disableLinks: true
+      });
     });
 
     this.formContainer.show(configurationEditor);

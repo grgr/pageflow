@@ -6,11 +6,13 @@
 @import "./blank_entry";
 @import "./dialogs";
 @import "./colors";
-@import "./embedded";
 @import "./background_positioning";
+@import "./page_selection";
 @import "./files_explorer";
 @import "./locked";
 @import "./help";
+@import "./indicators";
+@import "./disabled_atmo_indicator";
 
 .editor {
   @extend %pageflow-ui;
@@ -46,9 +48,13 @@
     text-decoration: none;
   }
 
+  @import "./list";
+  @import "./drop_down_button";
+
   @import "./outline";
   @import "./failures";
   @import "./menu";
+  @import "./inputs";
   @import "./manage_files";
   @import "./files";
   @import "./confirm_encoding";
@@ -64,6 +70,9 @@
   @import "./quotas";
   @import "./back_button_decorator";
   @import "./widgets";
+  @import "./page_links";
+  @import "./storyline_picker";
+  @import "./loading";
 
   a.publish {
     @include eye-icon;
@@ -91,6 +100,10 @@
     @include icon-button(#d00);
     @include trash-icon;
     float: right;
+
+    &.faded {
+      opacity: 0.3;
+    }
   }
 
   a.upload {
@@ -114,10 +127,15 @@ main.ui-layout-pane {
   padding: 0;
   overflow: hidden;
   border: 0;
+  background-color: #000;
 }
 
-main > .container {
+main > div {
   height: 100%;
+
+  > .container {
+    height: 100%;
+  }
 }
 
 #help_entries_seed {

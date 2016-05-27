@@ -6,21 +6,34 @@ module Pageflow
     attr_reader :entry, :revision
     attr_accessor :share_target
 
-    delegate(:id, :account, :theming, :to_model, :to_key, :persisted?, :to => :entry)
+    delegate(:id,
+             :account, :theming,
+             :enabled_feature_names,
+             :to_model, :to_key, :persisted?,
+             :authenticate,
+             :to => :entry)
 
-    delegate(:widgets, :chapters, :pages, :files,
+    delegate(:widgets,
+             :storylines, :main_storyline_chapters, :chapters, :pages,
+             :files,
              :image_files, :video_files, :audio_files,
-             :title, :summary, :credits, :manual_start,
+             :summary, :credits, :manual_start,
              :emphasize_chapter_beginning,
              :emphasize_new_pages,
              :share_image_id, :share_image_x, :share_image_y,
              :locale,
+             :author, :publisher, :keywords,
+             :password_protected?,
              :to => :revision)
 
     def initialize(entry, revision = nil)
       @entry = entry
       @revision = revision || entry.published_revision
       @custom_revision = !!revision
+    end
+
+    def title
+      revision.title.presence || entry.title
     end
 
     def stylesheet_model

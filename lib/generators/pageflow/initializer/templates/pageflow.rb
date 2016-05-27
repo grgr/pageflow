@@ -8,13 +8,12 @@ Pageflow.configure do |config|
 
   # Page types available in the editor. Add futher page types from
   # page type engines below.
-  config.register_page_type(Pageflow::BuiltInPageType.background_image)
-  config.register_page_type(Pageflow::BuiltInPageType.background_video)
-  config.register_page_type(Pageflow::BuiltInPageType.video)
-  config.register_page_type(Pageflow::BuiltInPageType.audio)
-  config.register_page_type(Pageflow::BuiltInPageType.audio_loop)
-  config.register_page_type(Pageflow::BuiltInPageType.internal_links)
-  # config.register_page_type(Pageflow::Rainbow::PageType.new)
+  config.page_types.register(Pageflow::BuiltInPageType.background_image)
+  config.page_types.register(Pageflow::BuiltInPageType.background_video)
+  config.page_types.register(Pageflow::BuiltInPageType.video)
+  config.page_types.register(Pageflow::BuiltInPageType.audio)
+  config.page_types.register(Pageflow::BuiltInPageType.audio_loop)
+  # config.page_types.register(Pageflow::Rainbow::PageType.new)
 
   # Add custom themes by invoking the pageflow:theme generator and
   # registering the theme here.
@@ -35,6 +34,16 @@ Pageflow.configure do |config|
   # pageflow_filesystem_root paperclip interpolation.
   config.paperclip_filesystem_root = 'tmp/attachments/production'
 
+  # How to handle https requests for URLs which will have assets in the page.
+  # If you wish to serve all assets over http and prevent mixed-content warnings,
+  # you can force a redirect to http. The inverse is also true: you can force
+  # a redirect to https for all http requests.
+  #
+  #     config.public_https_mode = :prevent (default) # => redirects https to http
+  #     config.public_https_mode = :enforce # => redirects http to https
+  #     config.public_https_mode = :ignore # => does nothing
+  config.public_https_mode = :ignore
+
   # Rewrite the below section to use your favorite configuration
   # method: ENV variables, secrets.yml, custom yml files. If you use
   # environment variables consider the dotenv gem to configure your
@@ -48,25 +57,32 @@ Pageflow.configure do |config|
   # calls are allowed.
   config.paperclip_s3_default_options.merge!(
     :s3_credentials => {
-      :bucket => 'com-example-pageflow-development',
-      :access_key_id => 'xxx',
-      :secret_access_key => 'xxx',
-      :s3_host_name => 's3-eu-west-1.amazonaws.com'
+      :bucket => ENV.fetch('S3_BUCKET', 'com-example-pageflow-development'),
+      :access_key_id => ENV.fetch('S3_ACCESS_KEY', 'xxx'),
+      :secret_access_key => ENV.fetch('S3_SECRET_KEY', 'xxx'),
+      :s3_host_name => ENV.fetch('S3_HOST_NAME', 's3-eu-west-1.amazonaws.com')
     },
-    :s3_host_alias => 'com-example-pageflow.s3-website-eu-west-1.amazonaws.com',
-    :s3_protocol => 'http'
+    :s3_host_alias => ENV.fetch('S3_HOST_ALIAS', 'com-example-pageflow.s3-website-eu-west-1.amazonaws.com'),
+    :s3_protocol => ENV.fetch('S3_PROTOCOL', 'http')
   )
 
   # Default options for paperclip attachments which are supposed to
   # use filesystem storage. All options allowed in paperclip has_attached_file
   # calls are allowed.
   config.zencoder_options.merge!(
-    :api_key => 'xxx',
-    :output_bucket => 'com-example-pageflow-out',
-    :s3_host_alias => 'com-example-pageflow-out.s3-website-eu-west-1.amazonaws.com',
-    :s3_protocol => 'http',
+    :api_key => ENV.fetch('ZENCODER_API_KEY', 'xxx'),
+    :output_bucket => ENV.fetch('S3_OUTPUT_BUCKET', 'com-example-pageflow-out'),
+    :s3_host_alias => ENV.fetch('S3_OUTPUT_HOST_ALIAS', 'com-example-pageflow-out.s3-website-eu-west-1.amazonaws.com'),
+    :s3_protocol => ENV.fetch('S3_PROTOCOL','http'),
     :attachments_version => 'v1'
   )
+
+  # Specify default meta tags to use in published stories.
+  # These defaults will be included in the page <head> unless overriden by the Entry.
+  # If you set these to <tt>nil</tt> or <tt>""</tt> the meta tag won't be included.
+  config.default_keywords_meta_tag = 'pageflow, multimedia, reportage'
+  config.default_author_meta_tag = 'Pageflow'
+  config.default_publisher_meta_tag = 'Pageflow'
 end
 
 # Comment out this call if you wish to run rails generators or rake

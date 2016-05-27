@@ -1,3 +1,5 @@
+<% @editor_scope = true %>
+
 <% content_for(:head) do %>
     <%= stylesheet_link_tag('pageflow/application_with_simulated_media_queries', media: 'all', 'data-turbolinks-track' => true) %>
     <%= entry_theme_stylesheet_link_tag(@entry) %>
@@ -7,6 +9,9 @@
 <% end %>
 
 <main class="ui-layout-center">
+  <div id="entry_preview"></div>
+  <div id="main_content"></div>
+  <div id="editor_indicators"></div>
 </main>
 
 <sidebar class="ui-layout-east editor">
@@ -18,6 +23,9 @@
 </sidebar>
 
 <div class="dialog_container">
+</div>
+
+<div class="editor" id="editor_menu_container">
 </div>
 
 <%= form_for editor_entry_files_path(@entry, collection_name: 'image_files'), :html => {:multipart => true, :id => 'upload'} do |f| %>
@@ -33,7 +41,9 @@
 
 <% I18n.with_locale(@entry.locale) do %>
   <%= page_type_templates %>
+  <%= render('pageflow/editor/entries/indicators_seed', theme: @entry.theming.theme) %>
 <% end %>
 
-<%= render('pageflow/editor/entries/help_entries_seed') %>
+<%= render('pageflow/editor/entries/help_entries_seed', config: @entry_config) %>
+
 <%= render('pageflow/editor/entries/analytics', entry: @entry) %>

@@ -29,6 +29,14 @@
         $(element).removeClass('sharing');
       });
 
+      $('.imprint_mobile a', element).on('click touchstart', function(event) {
+        event.stopPropagation();
+      });
+
+      $('.parent_page', element).parentPageButton({
+        visibleClass: 'is_visible'
+      });
+
       $('.wrapper', element).each(function() {
         var sharingMobile = $(this).parents('.sharing_mobile');
 
@@ -38,8 +46,9 @@
           probeType: 3
         });
 
-        $('ul', element).pageNavigationList({
-          scroller: scroller
+        $('ul.pages', element).pageNavigationList({
+          scroller: scroller,
+          animationDuration: 500
         });
 
         scroller.on('scroll', function() {

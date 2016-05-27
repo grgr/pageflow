@@ -1,13 +1,19 @@
 module Pageflow
   class Chapter < ActiveRecord::Base
-    belongs_to :revision, :touch => true
+    belongs_to :storyline, touch: true
     has_many :pages, -> { order('position ASC') }
 
-    delegate :entry, :to => :revision
+    delegate :entry, to: :storyline
 
-    def copy_to(revision)
+    serialize :configuration, JSON
+
+    def configuration
+      super || {}
+    end
+
+    def copy_to(storyline)
       chapter = dup
-      revision.chapters << chapter
+      storyline.chapters << chapter
 
       pages.each do |page|
         page.copy_to(chapter)

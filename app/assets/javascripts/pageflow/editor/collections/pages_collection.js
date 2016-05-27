@@ -4,7 +4,13 @@ pageflow.PagesCollection = Backbone.Collection.extend({
   url: '/pages',
 
   comparator: function(pageA, pageB) {
-    if (pageA.chapterPosition() > pageB.chapterPosition()) {
+    if (pageA.storylinePosition() > pageB.storylinePosition()) {
+      return 1;
+    }
+    else if (pageA.storylinePosition() < pageB.storylinePosition()) {
+      return -1;
+    }
+    else if (pageA.chapterPosition() > pageB.chapterPosition()) {
       return 1;
     }
     else if (pageA.chapterPosition() < pageB.chapterPosition()) {
@@ -22,6 +28,6 @@ pageflow.PagesCollection = Backbone.Collection.extend({
   },
 
   getByPermaId: function(permaId) {
-    return this.findWhere({perma_id: permaId});
+    return this.findWhere({perma_id: parseInt(permaId, 10)});
   }
 });
