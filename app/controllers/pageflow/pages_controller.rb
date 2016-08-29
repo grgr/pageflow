@@ -54,7 +54,7 @@ module Pageflow
 
     def page_params
       configuration = params.require(:page)[:configuration].try(:permit!)
-      params.require(:page).permit(:template, :position, :title).merge(:configuration => configuration)
+      params.require(:page).permit(:template, :position, :title).merge(:configuration => configuration, :title => params[:page].try(:title).gsub('...', '<br>'))
     end
   end
 end
