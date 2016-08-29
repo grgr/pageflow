@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <%= content_tag(:html, lang: I18n.locale) do %>
 <head>
-  <title><%= @page_title.presence || 'Pageflow' %></title>
+  <title><%= @page_title.presence || 'mehrblick Slides' %></title>
 
   <script>
     window.PAGEFLOW_EDITOR = <%= @editor_scope ? 'true' : 'false' %>;
