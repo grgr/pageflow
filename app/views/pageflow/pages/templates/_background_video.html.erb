@@ -11,11 +11,7 @@
     <div>
       <div class="contentWrapper">
         <div class="page_header">
-          <h2>
-            <span class="tagline"><%= configuration['tagline'] %></span>
-            <span class="title"><%= configuration['title'] %></span>
-            <span class="subtitle"><%= configuration['subtitle'] %></span>
-          </h2>
+          <%= render partial: 'pageflow/pages/templates/page_header_h2', locals: {configuration: configuration} %>
           <%= poster_image_tag(configuration['video_file_id'], configuration['poster_image_id'], {:class => "print_image"}) %>
         </div>
         <div class="contentText">
