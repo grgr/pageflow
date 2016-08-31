@@ -253,7 +253,7 @@ pageflow.pageType.register('video', _.extend({
         showControls();
         if (!pageflow.browser.has('phone platform')) {
           clearTimeout(timeout);
-          timeout = setTimeout(hideControls, 2000);
+          timeout = setTimeout(hideControls, 200);
         }
       }
 
